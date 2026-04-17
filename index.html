@@ -1,1 +1,1398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jai Gurudev Kisan Seva Kendra - ERP</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;700;800&family=Noto+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<!-- Firebase Compat CDN (no module needed) -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<style>
+:root{--primary:#e65c00;--primary-dark:#c94e00;--primary-light:#ff7a1a;--accent:#f9c74f;--success:#2ec27e;--danger:#e74c3c;--info:#3498db;--warning:#f39c12;--bg:#f0f2f5;--card:#fff;--sidebar:#1a1a2e;--text:#1a1a2e;--text-muted:#6b7280;--border:#e5e7eb;--shadow:0 2px 12px rgba(0,0,0,0.08);}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Noto Sans',sans-serif;background:var(--bg);color:var(--text);overflow-x:hidden;}
+h1,h2,h3,h4{font-family:'Baloo 2',sans-serif;}
+#loginPage{display:flex;align-items:center;justify-content:center;min-height:100vh;background:linear-gradient(135deg,#1a1a2e 0%,#16213e 40%,#0f3460 100%);position:relative;overflow:hidden;}
+#loginPage::before{content:'⛽';font-size:300px;position:absolute;opacity:0.04;right:-50px;top:-50px;animation:float 6s ease-in-out infinite;}
+@keyframes float{0%,100%{transform:translateY(0) rotate(-5deg);}50%{transform:translateY(-20px) rotate(5deg);}}
+.login-card{background:rgba(255,255,255,0.06);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,0.12);border-radius:24px;padding:44px 38px;width:420px;box-shadow:0 25px 60px rgba(0,0,0,0.4);}
+.login-logo{text-align:center;margin-bottom:28px;}
+.login-logo .pump-icon{font-size:52px;display:block;margin-bottom:6px;}
+.login-logo h1{color:var(--accent);font-size:21px;line-height:1.2;}
+.login-logo p{color:rgba(255,255,255,0.45);font-size:12px;margin-top:4px;}
+.fg{margin-bottom:18px;}
+.fg label{display:block;color:rgba(255,255,255,0.7);font-size:13px;font-weight:600;margin-bottom:7px;}
+.fg input,.fg select{width:100%;padding:11px 15px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:10px;color:#fff;font-size:14px;outline:none;transition:.3s;}
+.fg input::placeholder{color:rgba(255,255,255,0.3);}
+.fg input:focus{border-color:var(--primary-light);}
+.fg select option{background:#1a1a2e;color:#fff;}
+.btn-login{width:100%;padding:13px;background:linear-gradient(135deg,var(--primary),var(--primary-light));border:none;border-radius:10px;color:#fff;font-size:15px;font-weight:700;font-family:'Baloo 2',sans-serif;cursor:pointer;transition:.3s;}
+.btn-login:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(230,92,0,0.4);}
+.demo-box{margin-top:18px;padding:12px;background:rgba(255,255,255,0.05);border-radius:8px;font-size:12px;color:rgba(255,255,255,0.5);text-align:center;}
+.demo-box span{color:var(--accent);font-weight:700;}
+#app{display:none;min-height:100vh;}
+.layout{display:flex;min-height:100vh;}
+.sidebar{width:256px;background:var(--sidebar);min-height:100vh;display:flex;flex-direction:column;position:fixed;left:0;top:0;bottom:0;z-index:100;overflow-y:auto;}
+.sb-head{padding:18px 14px;border-bottom:1px solid rgba(255,255,255,0.07);}
+.sb-brand{display:flex;align-items:center;gap:10px;}
+.sb-brand .bi{font-size:26px;}
+.sb-brand h3{color:var(--accent);font-size:12px;line-height:1.3;}
+.sb-brand p{color:rgba(255,255,255,0.35);font-size:10px;}
+.sb-user{padding:11px 14px;background:rgba(255,255,255,0.04);border-bottom:1px solid rgba(255,255,255,0.07);display:flex;align-items:center;gap:10px;}
+.sb-avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--accent));display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;font-size:14px;flex-shrink:0;}
+.sb-uname{color:#fff;font-size:13px;font-weight:600;}
+.sb-role{color:rgba(255,255,255,0.4);font-size:11px;}
+.nav-sec{padding:6px 0;}
+.nav-sec-title{padding:7px 14px 3px;color:rgba(255,255,255,0.3);font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;}
+.nav-item{display:flex;align-items:center;gap:9px;padding:8px 14px;color:rgba(255,255,255,0.58);cursor:pointer;transition:.2s;font-size:12.5px;border-left:3px solid transparent;}
+.nav-item:hover{background:rgba(255,255,255,0.06);color:#fff;}
+.nav-item.active{background:rgba(230,92,0,0.15);color:var(--primary-light);border-left-color:var(--primary-light);}
+.nav-item i{width:16px;text-align:center;font-size:13px;}
+.nav-badge{margin-left:auto;background:var(--danger);color:#fff;font-size:9px;padding:2px 6px;border-radius:10px;}
+.sb-footer{margin-top:auto;padding:14px;border-top:1px solid rgba(255,255,255,0.07);}
+.btn-logout{width:100%;padding:9px;background:rgba(231,76,60,0.15);border:1px solid rgba(231,76,60,0.3);border-radius:8px;color:#e74c3c;cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;gap:8px;transition:.2s;}
+.btn-logout:hover{background:rgba(231,76,60,0.25);}
+.main-content{margin-left:256px;flex:1;display:flex;flex-direction:column;}
+.topbar{background:#fff;padding:0 22px;height:58px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:50;box-shadow:0 1px 4px rgba(0,0,0,0.06);}
+.topbar-left{display:flex;align-items:center;gap:14px;}
+.topbar-left h2{font-size:17px;}
+.topbar-right{display:flex;align-items:center;gap:10px;}
+.topbar-date{font-size:12px;color:var(--text-muted);background:var(--bg);padding:5px 10px;border-radius:6px;}
+.tbtn{padding:7px 12px;border:1px solid var(--border);background:#fff;border-radius:7px;cursor:pointer;font-size:12px;color:var(--text-muted);display:flex;align-items:center;gap:5px;transition:.2s;}
+.tbtn:hover{border-color:var(--primary);color:var(--primary);}
+.page-content{padding:20px;flex:1;}
+.card{background:var(--card);border-radius:12px;padding:18px;box-shadow:var(--shadow);border:1px solid var(--border);margin-bottom:16px;}
+.card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px;}
+.card-title{font-size:14px;font-weight:700;}
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px;margin-bottom:18px;}
+.stat-card{background:var(--card);border-radius:12px;padding:16px;box-shadow:var(--shadow);border:1px solid var(--border);}
+.stat-icon{width:40px;height:40px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:17px;margin-bottom:10px;}
+.stat-icon.orange{background:rgba(230,92,0,0.1);color:var(--primary);}
+.stat-icon.green{background:rgba(46,194,126,0.1);color:var(--success);}
+.stat-icon.blue{background:rgba(52,152,219,0.1);color:var(--info);}
+.stat-icon.yellow{background:rgba(249,199,79,0.12);color:#d4a017;}
+.stat-icon.red{background:rgba(231,76,60,0.1);color:var(--danger);}
+.stat-value{font-size:22px;font-weight:800;font-family:'Baloo 2',sans-serif;}
+.stat-label{font-size:11px;color:var(--text-muted);}
+.stat-sub{font-size:11px;color:var(--success);margin-top:3px;}
+.stat-sub.neg{color:var(--danger);}
+.table-wrap{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;font-size:12.5px;}
+thead tr{background:var(--bg);}
+th{padding:9px 11px;text-align:left;font-weight:600;font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.4px;border-bottom:1px solid var(--border);}
+td{padding:9px 11px;border-bottom:1px solid #f3f4f6;color:var(--text);vertical-align:middle;}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:#fafafa;}
+.badge{display:inline-block;padding:3px 8px;border-radius:20px;font-size:10.5px;font-weight:600;}
+.badge-success{background:rgba(46,194,126,0.1);color:var(--success);}
+.badge-danger{background:rgba(231,76,60,0.1);color:var(--danger);}
+.badge-warning{background:rgba(243,156,18,0.1);color:var(--warning);}
+.badge-info{background:rgba(52,152,219,0.1);color:var(--info);}
+.badge-orange{background:rgba(230,92,0,0.1);color:var(--primary);}
+.form-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px;margin-bottom:14px;}
+.form-field{display:flex;flex-direction:column;gap:5px;}
+.form-field label{font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.4px;}
+.form-field input,.form-field select,.form-field textarea{padding:9px 11px;border:1px solid var(--border);border-radius:7px;font-size:13px;outline:none;transition:.2s;background:#fff;font-family:'Noto Sans',sans-serif;}
+.form-field input:focus,.form-field select:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(230,92,0,0.07);}
+.form-field input[readonly]{background:#f8f9fa;}
+.btn{padding:8px 16px;border-radius:7px;font-size:12.5px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:6px;border:none;transition:.2s;font-family:'Noto Sans',sans-serif;}
+.btn-primary{background:var(--primary);color:#fff;}
+.btn-primary:hover{background:var(--primary-dark);}
+.btn-success{background:var(--success);color:#fff;}
+.btn-success:hover{background:#27ae60;}
+.btn-danger{background:var(--danger);color:#fff;}
+.btn-outline{background:transparent;border:1px solid var(--border);color:var(--text);}
+.btn-outline:hover{border-color:var(--primary);color:var(--primary);}
+.btn-sm{padding:5px 10px;font-size:11.5px;}
+.btn-group{display:flex;gap:7px;flex-wrap:wrap;}
+.tabs{display:flex;gap:0;border-bottom:2px solid var(--border);margin-bottom:18px;overflow-x:auto;}
+.tab{padding:9px 16px;font-size:12.5px;font-weight:600;cursor:pointer;color:var(--text-muted);border-bottom:2px solid transparent;margin-bottom:-2px;white-space:nowrap;transition:.2s;}
+.tab.active{color:var(--primary);border-bottom-color:var(--primary);}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);}
+.modal{background:#fff;border-radius:16px;padding:26px;width:90%;max-width:580px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.2);}
+.modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;}
+.modal-title{font-size:17px;font-weight:700;}
+.modal-close{width:30px;height:30px;border-radius:50%;background:var(--bg);border:none;cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;}
+#toast{position:fixed;bottom:20px;right:20px;background:#1a1a2e;color:#fff;padding:11px 18px;border-radius:10px;font-size:13px;z-index:9999;display:none;box-shadow:0 8px 24px rgba(0,0,0,0.2);border-left:4px solid var(--success);max-width:320px;}
+.pin-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:2000;display:none;align-items:center;justify-content:center;backdrop-filter:blur(6px);}
+.pin-box{background:#fff;border-radius:18px;padding:32px;width:340px;text-align:center;box-shadow:0 24px 60px rgba(0,0,0,0.25);}
+.pin-box h3{font-size:18px;margin-bottom:6px;}
+.pin-box p{font-size:12px;color:var(--text-muted);margin-bottom:20px;}
+.pin-input{width:100%;padding:14px;font-size:22px;text-align:center;letter-spacing:12px;border:2px solid var(--border);border-radius:10px;outline:none;margin-bottom:14px;font-family:'Baloo 2',sans-serif;}
+.pin-input:focus{border-color:var(--primary);}
+.pin-error{color:var(--danger);font-size:12px;margin-bottom:10px;display:none;}
+.lock-badge{display:inline-flex;align-items:center;gap:4px;background:rgba(231,76,60,0.1);color:var(--danger);padding:3px 8px;border-radius:6px;font-size:11px;font-weight:600;}
+.section-page{display:none;}
+.section-page.active{display:block;}
+.tank-level{height:90px;background:#f8f9fa;border-radius:8px;position:relative;overflow:hidden;margin-bottom:7px;}
+.tank-fill{position:absolute;bottom:0;left:0;right:0;transition:1s;}
+.tank-percent{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:17px;font-weight:800;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,0.4);}
+.highlight-row{background:rgba(249,199,79,0.07)!important;}
+.gst-tag{background:linear-gradient(135deg,#1a1a2e,#0f3460);color:#fff;padding:2px 7px;border-radius:4px;font-size:10px;font-weight:700;}
+.notif-dot{width:7px;height:7px;background:var(--danger);border-radius:50%;display:inline-block;}
+.fb-badge{position:fixed;top:10px;right:10px;font-size:11px;padding:4px 10px;border-radius:20px;z-index:9999;font-weight:700;transition:.3s;}
+.fb-on{background:rgba(46,194,126,0.18);color:var(--success);border:1px solid rgba(46,194,126,0.4);}
+.fb-off{background:rgba(231,76,60,0.15);color:var(--danger);border:1px solid rgba(231,76,60,0.3);}
+@media print{.sidebar,.topbar,.no-print{display:none!important;}.main-content{margin-left:0;}}
+</style>
+</head>
+<body>
 
+<div id="fbBadge" class="fb-badge fb-off">⚡ Connecting...</div>
+
+<!-- LOGIN -->
+<div id="loginPage">
+  <div class="login-card">
+    <div class="login-logo">
+      <span class="pump-icon">⛽</span>
+      <h1>Jai Gurudev Kisan<br>Seva Kendra</h1>
+      <p>Petrol Pump Management ERP System</p>
+    </div>
+    <div class="fg"><label>Username</label><input type="text" id="loginUser" placeholder="Enter username"></div>
+    <div class="fg"><label>Password</label><input type="password" id="loginPass" placeholder="Enter password"></div>
+    <button class="btn-login" onclick="doLogin()"><i class="fas fa-sign-in-alt"></i> Login to ERP</button>
+    <div class="demo-box">
+      <b>Owner:</b> <span>owner / owner@123</span> &nbsp;|&nbsp; <b>Manager:</b> <span>manager / mgr@123</span><br>
+      <b>Cashier:</b> <span>cashier / cash@123</span> &nbsp;|&nbsp; <b>Salesman:</b> <span>sales / sales@123</span>
+    </div>
+  </div>
+</div>
+
+<!-- OWNER PIN -->
+<div class="pin-overlay" id="pinOverlay">
+  <div class="pin-box">
+    <div style="font-size:40px;margin-bottom:8px;">🔐</div>
+    <h3>Owner Verification</h3>
+    <p id="pinMsg">Sirf Owner yeh action kar sakta hai.<br>Owner PIN enter karein:</p>
+    <input type="password" class="pin-input" id="pinInput" maxlength="6" placeholder="••••••" onkeydown="if(event.key==='Enter')verifyOwnerPin()">
+    <div class="pin-error" id="pinError">❌ Galat PIN!</div>
+    <div class="btn-group" style="justify-content:center;">
+      <button class="btn btn-primary" onclick="verifyOwnerPin()"><i class="fas fa-unlock"></i> Verify</button>
+      <button class="btn btn-outline" onclick="closePinOverlay()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="app">
+<div class="layout">
+<div class="sidebar" id="sidebar">
+  <div class="sb-head"><div class="sb-brand"><span class="bi">⛽</span><div><h3>Jai Gurudev Kisan Seva Kendra</h3><p>Petrol Pump ERP v3.0</p></div></div></div>
+  <div class="sb-user"><div class="sb-avatar" id="sbAvatar">A</div><div><div class="sb-uname" id="sbName">Admin</div><div class="sb-role" id="sbRole">Owner</div></div></div>
+  <div class="nav-sec">
+    <div class="nav-sec-title">Main</div>
+    <div class="nav-item active" onclick="showPage('dashboard')"><i class="fas fa-tachometer-alt"></i> Dashboard</div>
+  </div>
+  <div class="nav-sec">
+    <div class="nav-sec-title">Vouchers</div>
+    <div class="nav-item" onclick="showPage('saleEntry')"><i class="fas fa-gas-pump"></i> Sale Entry</div>
+    <div class="nav-item" onclick="showPage('expenses')"><i class="fas fa-wallet"></i> Cash Expenses</div>
+    <div class="nav-item" onclick="showPage('billing')"><i class="fas fa-file-invoice"></i> Billing</div>
+    <div class="nav-item" onclick="showPage('rateChange')"><i class="fas fa-percentage"></i> Rate Change</div>
+    <div class="nav-item" onclick="showPage('creditCollection')"><i class="fas fa-hand-holding-usd"></i> Credit Collection</div>
+    <div class="nav-item" onclick="showPage('journalEntry')"><i class="fas fa-book"></i> Journal / Cash Book</div>
+    <div class="nav-item" onclick="showPage('salaryEntry')"><i class="fas fa-user-tie"></i> Staff Salary</div>
+    <div class="nav-item" onclick="showPage('dipStock')"><i class="fas fa-oil-can"></i> Dip Stock</div>
+    <div class="nav-item" onclick="showPage('shortExcess')"><i class="fas fa-balance-scale"></i> Short/Excess</div>
+  </div>
+  <div class="nav-sec">
+    <div class="nav-sec-title">Reports</div>
+    <div class="nav-item" onclick="showPage('dayBook')"><i class="fas fa-calendar-day"></i> Day Book</div>
+    <div class="nav-item" onclick="showPage('salesReport')"><i class="fas fa-chart-line"></i> Sales Report</div>
+    <div class="nav-item" onclick="showPage('pendingReport')"><i class="fas fa-exclamation-circle"></i> Pending <span class="nav-badge" id="pendingBadge">0</span></div>
+    <div class="nav-item" onclick="showPage('reports')"><i class="fas fa-chart-bar"></i> Financial Reports</div>
+    <div class="nav-item" onclick="showPage('stockReports')"><i class="fas fa-boxes"></i> Stock Reports</div>
+    <div class="nav-item" onclick="showPage('gst')"><i class="fas fa-receipt"></i> GST Returns</div>
+  </div>
+  <div class="nav-sec">
+    <div class="nav-sec-title">Settings</div>
+    <div class="nav-item" onclick="showPage('masters')"><i class="fas fa-database"></i> Masters</div>
+    <div class="nav-item" id="navSettings" onclick="showPage('settings')"><i class="fas fa-cog"></i> Settings</div>
+  </div>
+  <div class="sb-footer"><button class="btn-logout" onclick="doLogout()"><i class="fas fa-sign-out-alt"></i> Logout</button></div>
+</div>
+
+<div class="main-content">
+  <div class="topbar">
+    <div class="topbar-left">
+      <button class="tbtn" onclick="document.getElementById('sidebar').classList.toggle('open')"><i class="fas fa-bars"></i></button>
+      <h2 id="pageTitle">Dashboard</h2>
+    </div>
+    <div class="topbar-right">
+      <div class="topbar-date" id="currentDate"></div>
+      <button class="tbtn no-print" onclick="window.print()"><i class="fas fa-print"></i></button>
+      <button class="tbtn no-print" onclick="showNotif()"><i class="fas fa-bell"></i> <span class="notif-dot"></span></button>
+    </div>
+  </div>
+  <div class="page-content">
+
+    <!-- DASHBOARD -->
+    <div id="page-dashboard" class="section-page active">
+      <div class="stat-grid" id="dashStats"></div>
+      <div style="display:grid;grid-template-columns:2fr 1fr;gap:16px;margin-bottom:16px;">
+        <div class="card"><div class="card-header"><div class="card-title"><i class="fas fa-oil-can"></i> Tank Stock</div><button class="btn btn-sm btn-outline no-print" onclick="showPage('dipStock')">Update Dip</button></div><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;" id="tankCards"></div></div>
+        <div class="card"><div class="card-header"><div class="card-title"><i class="fas fa-clock"></i> Active Shift</div><span class="badge badge-success">SHIFT 2 OPEN</span></div><div style="font-size:12px;" id="activeShiftInfo"></div><div class="btn-group" style="margin-top:10px;"><button class="btn btn-sm btn-primary no-print" onclick="showPage('saleEntry')">Sale Entry</button><button class="btn btn-sm btn-danger no-print" onclick="showToast('Shift close ho gayi!')">Close Shift</button></div></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+        <div class="card"><div class="card-header"><div class="card-title"><i class="fas fa-list"></i> Recent Sales</div><button class="btn btn-sm btn-outline no-print" onclick="showPage('saleEntry')">View All</button></div><div class="table-wrap"><table><thead><tr><th>Time</th><th>Fuel</th><th>Qty</th><th>Amount</th><th>Mode</th></tr></thead><tbody id="recentSalesTbl"></tbody></table></div></div>
+        <div class="card"><div class="card-header"><div class="card-title"><i class="fas fa-exclamation-triangle"></i> Pending Collections</div><button class="btn btn-sm btn-outline no-print" onclick="showPage('pendingReport')">View All</button></div><div class="table-wrap"><table><thead><tr><th>Customer</th><th>Pending</th><th>Days</th><th class="no-print">Action</th></tr></thead><tbody id="pendingDashTbl"></tbody></table></div></div>
+      </div>
+    </div>
+
+    <!-- SALE ENTRY -->
+    <div id="page-saleEntry" class="section-page">
+      <div class="card">
+        <div class="card-header"><div class="card-title"><i class="fas fa-gas-pump"></i> New Sale Entry</div></div>
+        <div class="form-row">
+          <div class="form-field"><label>Date</label><input type="date" id="sDate"></div>
+          <div class="form-field"><label>Shift</label><select id="sShift"><option>Shift 1 (06-14)</option><option selected>Shift 2 (14-22)</option><option>Shift 3 (22-06)</option></select></div>
+          <div class="form-field"><label>Fuel Type</label><select id="sFuel" onchange="updateFuelRate()"><option value="Petrol">Petrol</option><option value="Diesel">Diesel</option><option value="HSD">HSD</option></select></div>
+          <div class="form-field"><label>Nozzle</label><select id="sNozzle"><option>P-1</option><option>P-2</option><option>P-3</option><option>D-1</option><option>D-2</option></select></div>
+        </div>
+        <div class="form-row">
+          <div class="form-field"><label>Qty (Litres)</label><input type="number" id="sQty" placeholder="0.00" oninput="calcSale()"></div>
+          <div class="form-field"><label>Rate (₹/L)</label><input type="number" id="sRate" placeholder="0.00" oninput="calcSale()"></div>
+          <div class="form-field"><label>Amount (₹)</label><input type="number" id="sAmt" readonly></div>
+          <div class="form-field"><label>Payment Mode</label><select id="sMode" onchange="toggleCreditFields()"><option>Cash</option><option>Card/UPI</option><option>Credit</option></select></div>
+        </div>
+        <div id="creditFields" style="display:none;"><div class="form-row"><div class="form-field"><label>Customer</label><select id="sCust"><option>-- Select --</option></select></div><div class="form-field"><label>Vehicle No.</label><input type="text" id="sVehicle" placeholder="UP32 AB 1234"></div></div></div>
+        <div class="form-row"><div class="form-field"><label>Remarks</label><input type="text" id="sRemarks" placeholder="Optional"></div></div>
+        <div class="btn-group no-print"><button class="btn btn-primary" onclick="saveSale()"><i class="fas fa-save"></i> Save Sale</button><button class="btn btn-outline" onclick="resetSaleForm()"><i class="fas fa-undo"></i> Reset</button></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">Sales Register</div><div id="saleSummary" style="font-size:12px;color:var(--text-muted);"></div></div>
+        <div class="table-wrap"><table><thead><tr><th>#</th><th>Time</th><th>Fuel</th><th>Qty(L)</th><th>Rate</th><th>Amount</th><th>Mode</th><th>Customer</th><th class="no-print">Action</th></tr></thead><tbody id="salesRegisterTbl"></tbody></table></div>
+      </div>
+    </div>
+
+    <!-- EXPENSES -->
+    <div id="page-expenses" class="section-page">
+      <div class="card">
+        <div class="card-header"><div class="card-title"><i class="fas fa-wallet"></i> Cash Expense Entry</div></div>
+        <div class="form-row">
+          <div class="form-field"><label>Date</label><input type="date" id="expDate"></div>
+          <div class="form-field"><label>Expense Head</label><select id="expHead"><option>Electricity Bill</option><option>Water Bill</option><option>Cleaning</option><option>Staff Food</option><option>Maintenance</option><option>Stationery</option><option>Miscellaneous</option></select></div>
+          <div class="form-field"><label>Amount (₹)</label><input type="number" id="expAmt" placeholder="0.00"></div>
+          <div class="form-field"><label>Paid By</label><select id="expPaid"><option>Cash</option><option>Bank</option></select></div>
+        </div>
+        <div class="form-row"><div class="form-field"><label>Staff</label><select id="expStaff"><option>Ramesh Kumar</option><option>Suresh Yadav</option><option>Mohan Singh</option></select></div><div class="form-field"><label>Narration</label><input type="text" id="expNarr" placeholder="Description"></div></div>
+        <div class="btn-group no-print"><button class="btn btn-primary" onclick="saveExpense()"><i class="fas fa-save"></i> Save Expense</button><button class="btn btn-outline" onclick="resetExpForm()"><i class="fas fa-undo"></i> Reset</button></div>
+      </div>
+      <div class="card"><div class="card-header"><div class="card-title">Expense Register</div><div id="expTotal" style="font-weight:700;color:var(--danger);font-size:13px;"></div></div><div class="table-wrap"><table><thead><tr><th>#</th><th>Date</th><th>Head</th><th>Narration</th><th>Amount</th><th>Paid By</th><th>Staff</th><th class="no-print">Action</th></tr></thead><tbody id="expenseRegTbl"></tbody></table></div></div>
+    </div>
+
+    <!-- BILLING -->
+    <div id="page-billing" class="section-page">
+      <div class="tabs"><div class="tab active" onclick="switchTab(this,'billGenerate')">Generate Invoice</div><div class="tab" onclick="switchTab(this,'billHistory')">Invoice History</div></div>
+      <div id="tab-billGenerate">
+        <div class="card">
+          <div class="card-header"><div class="card-title"><i class="fas fa-file-invoice"></i> Generate Invoice</div></div>
+          <div class="form-row"><div class="form-field"><label>Invoice No.</label><input type="text" id="invNo" readonly></div><div class="form-field"><label>Date</label><input type="date" id="invDate"></div><div class="form-field"><label>Bill To</label><select id="invCust"><option>Walk-in Customer</option></select></div><div class="form-field"><label>Payment Mode</label><select id="invMode"><option>Cash</option><option>Card/UPI</option><option>Credit</option></select></div></div>
+          <div style="border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:14px;"><table><thead><tr style="background:var(--bg);"><th>Item</th><th>Qty(L)</th><th>Rate</th><th>Taxable</th><th>GST 5%</th><th>Total</th><th class="no-print"></th></tr></thead><tbody id="billItemsTbl"></tbody></table></div>
+          <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;"><button class="btn btn-outline btn-sm no-print" onclick="addBillRow()"><i class="fas fa-plus"></i> Add Item</button><div style="font-size:13px;text-align:right;">Taxable: <b id="billSubTotal">₹0</b> | GST: <b id="billGSTTotal">₹0</b> | <span style="font-size:16px;font-weight:800;color:var(--primary);">Total: <span id="billGrandTotal">₹0</span></span></div></div>
+          <div class="btn-group no-print" style="margin-top:14px;"><button class="btn btn-primary" onclick="generateInvoice()"><i class="fas fa-file-invoice"></i> Generate Invoice</button><button class="btn btn-success" onclick="window.print()"><i class="fas fa-print"></i> Print</button></div>
+        </div>
+      </div>
+      <div id="tab-billHistory" style="display:none;"><div class="card"><div class="card-header"><div class="card-title">Invoice History</div></div><div class="table-wrap"><table><thead><tr><th>Invoice No</th><th>Date</th><th>Customer</th><th>Amount</th><th>GST</th><th>Total</th><th>Status</th><th class="no-print">Action</th></tr></thead><tbody id="invoiceHistoryTbl"></tbody></table></div></div></div>
+    </div>
+
+    <!-- RATE CHANGE -->
+    <div id="page-rateChange" class="section-page">
+      <div class="card"><div class="card-header"><div class="card-title"><i class="fas fa-percentage"></i> Fuel Rate Change</div><span class="lock-badge"><i class="fas fa-lock"></i> Owner Only</span></div>
+        <div style="background:rgba(243,156,18,0.08);border:1px solid rgba(243,156,18,0.3);border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:12px;color:var(--warning);"><i class="fas fa-exclamation-triangle"></i> Rate change ke liye Owner PIN required hai.</div>
+        <div class="table-wrap" style="margin-bottom:14px;"><table><thead><tr><th>Fuel</th><th>Current Rate</th><th>New Rate</th><th>Change</th></tr></thead><tbody id="rateChangeTbl"></tbody></table></div>
+        <div class="btn-group no-print"><button class="btn btn-primary" onclick="saveRateChange()"><i class="fas fa-save"></i> Save Rate Change</button></div>
+      </div>
+      <div class="card"><div class="card-header"><div class="card-title">Rate Change History</div></div><div class="table-wrap"><table><thead><tr><th>Date</th><th>Fuel</th><th>Old Rate</th><th>New Rate</th><th>Change</th><th>By</th></tr></thead><tbody id="rateHistoryTbl"></tbody></table></div></div>
+    </div>
+
+    <!-- CREDIT COLLECTION -->
+    <div id="page-creditCollection" class="section-page">
+      <div class="card"><div class="card-header"><div class="card-title"><i class="fas fa-hand-holding-usd"></i> Credit Collection</div></div>
+        <div class="form-row"><div class="form-field"><label>Receipt No.</label><input type="text" id="recNo" readonly></div><div class="form-field"><label>Date</label><input type="date" id="recDate"></div><div class="form-field"><label>Customer</label><select id="recCust" onchange="loadCustBalance()"><option>-- Select --</option></select></div></div>
+        <div id="custBalanceBox" style="display:none;background:rgba(52,152,219,0.06);border:1px solid rgba(52,152,219,0.2);border-radius:8px;padding:12px;margin-bottom:14px;"><div style="display:flex;gap:20px;flex-wrap:wrap;font-size:12.5px;">Outstanding: <b id="custOutstanding" style="color:var(--danger);">₹0</b> &nbsp;|&nbsp; Days: <b id="custDays" style="color:var(--warning);">0</b></div></div>
+        <div class="form-row"><div class="form-field"><label>Amount Received (₹)</label><input type="number" id="recAmt" placeholder="0.00"></div><div class="form-field"><label>Payment Mode</label><select id="recMode"><option>Cash</option><option>Cheque</option><option>NEFT/RTGS</option><option>UPI</option></select></div><div class="form-field"><label>Reference No.</label><input type="text" id="recRef" placeholder="Optional"></div></div>
+        <div class="btn-group no-print"><button class="btn btn-success" onclick="saveCollection()"><i class="fas fa-check"></i> Receive Payment</button><button class="btn btn-outline" onclick="window.print()"><i class="fas fa-print"></i> Print Receipt</button></div>
+      </div>
+      <div class="card"><div class="card-header"><div class="card-title">Collection Register</div></div><div class="table-wrap"><table><thead><tr><th>#</th><th>Date</th><th>Customer</th><th>Amount</th><th>Mode</th><th>Ref</th><th class="no-print">Action</th></tr></thead><tbody id="collectionRegTbl"></tbody></table></div></div>
+    </div>
+
+    <!-- JOURNAL -->
+    <div id="page-journalEntry" class="section-page">
+      <div class="tabs"><div class="tab active" onclick="switchTab(this,'tabJV')">Journal Entry</div><div class="tab" onclick="switchTab(this,'tabCash')">Cash Book</div><div class="tab" onclick="switchTab(this,'tabBank')">Bank Book</div></div>
+      <div id="tab-tabJV">
+        <div class="card"><div class="card-header"><div class="card-title">Journal Entry</div></div><div class="form-row"><div class="form-field"><label>Voucher No.</label><input type="text" id="jvNo" readonly></div><div class="form-field"><label>Date</label><input type="date" id="jvDate"></div><div class="form-field"><label>Narration</label><input type="text" id="jvNarr" placeholder="Narration"></div></div><div class="table-wrap" style="margin-bottom:10px;"><table><thead><tr><th>Account</th><th>Dr/Cr</th><th>Amount</th><th class="no-print"></th></tr></thead><tbody id="jvRows"></tbody></table></div><div class="btn-group no-print"><button class="btn btn-outline btn-sm" onclick="addJVRow()"><i class="fas fa-plus"></i> Add Row</button><button class="btn btn-primary" onclick="saveJV()"><i class="fas fa-save"></i> Post Journal</button></div></div>
+        <div class="card"><div class="card-header"><div class="card-title">Journal Register</div></div><div class="table-wrap"><table><thead><tr><th>Voucher</th><th>Date</th><th>Narration</th><th>Dr</th><th>Cr</th><th class="no-print">Action</th></tr></thead><tbody id="jvRegTbl"></tbody></table></div></div>
+      </div>
+      <div id="tab-tabCash" style="display:none;"><div class="card"><div class="card-header"><div class="card-title">Cash Book</div><div id="cashBookBalance" style="font-size:14px;font-weight:700;color:var(--success);"></div></div><div class="table-wrap"><table><thead><tr><th>Date</th><th>Particulars</th><th>Voucher</th><th>Receipt (Dr)</th><th>Payment (Cr)</th><th>Balance</th></tr></thead><tbody id="cashBookTbl"></tbody></table></div></div></div>
+      <div id="tab-tabBank" style="display:none;"><div class="card"><div class="card-header"><div class="card-title">Bank Book - SBI A/c **** 4821</div><div id="bankBookBalance" style="font-size:14px;font-weight:700;color:var(--success);"></div></div><div class="table-wrap"><table><thead><tr><th>Date</th><th>Particulars</th><th>Ref No.</th><th>Credit (In)</th><th>Debit (Out)</th><th>Balance</th></tr></thead><tbody id="bankBookTbl"></tbody></table></div></div></div>
+    </div>
+
+    <!-- SALARY -->
+    <div id="page-salaryEntry" class="section-page">
+      <div class="card"><div class="card-header"><div class="card-title"><i class="fas fa-user-tie"></i> Staff Salary Entry</div></div>
+        <div class="form-row"><div class="form-field"><label>Month</label><select id="salMonth"><option>January 2025</option><option>February 2025</option><option>March 2025</option></select></div><div class="form-field"><label>Staff</label><select id="salStaff" onchange="loadSalaryDefaults()"><option>Ramesh Kumar</option><option>Suresh Yadav</option><option>Mohan Singh</option></select></div><div class="form-field"><label>Basic (₹)</label><input type="number" id="salBasic" value="12000" oninput="calcSalary()"></div><div class="form-field"><label>Allowances (₹)</label><input type="number" id="salAllow" value="2000" oninput="calcSalary()"></div></div>
+        <div class="form-row"><div class="form-field"><label>Deductions (₹)</label><input type="number" id="salDeduct" value="500" oninput="calcSalary()"></div><div class="form-field"><label>Net Salary (₹)</label><input type="number" id="salNet" readonly></div><div class="form-field"><label>Payment Mode</label><select id="salMode"><option>Cash</option><option>Bank Transfer</option></select></div></div>
+        <div class="btn-group no-print"><button class="btn btn-primary" onclick="saveSalary()"><i class="fas fa-save"></i> Save Salary</button></div>
+      </div>
+      <div class="card"><div class="card-header"><div class="card-title">Salary Register</div><div id="salTotal" style="font-weight:700;color:var(--danger);font-size:13px;"></div></div><div class="table-wrap"><table><thead><tr><th>Month</th><th>Staff</th><th>Basic</th><th>Allow</th><th>Deduct</th><th>Net</th><th>Mode</th><th>Status</th><th class="no-print">Action</th></tr></thead><tbody id="salaryRegTbl"></tbody></table></div></div>
+    </div>
+
+    <!-- DIP STOCK -->
+    <div id="page-dipStock" class="section-page">
+
+      <!-- FUEL PURCHASE ENTRY -->
+      <div class="card">
+        <div class="card-header"><div class="card-title"><i class="fas fa-truck"></i> Fuel Purchase Entry</div><span class="lock-badge"><i class="fas fa-lock"></i> Owner Only</span></div>
+        <div class="form-row">
+          <div class="form-field"><label>Date</label><input type="date" id="fpDate"></div>
+          <div class="form-field"><label>Fuel Type</label><select id="fpFuel" onchange="calcFuelPurchase()"><option>Petrol</option><option>Diesel</option><option>HSD</option></select></div>
+          <div class="form-field"><label>Quantity (Litres)</label><input type="number" id="fpQty" placeholder="4000" oninput="calcFuelPurchase()"></div>
+          <div class="form-field"><label>Total Amount (₹)</label><input type="number" id="fpTotal" placeholder="395890" oninput="calcFuelPurchase()"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-field">
+            <label>Cost Price (Auto ₹/L)</label>
+            <input type="number" id="fpCostPrice" readonly style="background:#f0f9ff;font-weight:700;color:var(--info);">
+          </div>
+          <div class="form-field">
+            <label>Sale Price (Current ₹/L)</label>
+            <input type="number" id="fpSalePrice" oninput="calcFuelPurchase()">
+          </div>
+          <div class="form-field">
+            <label>Margin / Profit (₹/L)</label>
+            <input type="number" id="fpMargin" readonly style="background:#f0fff4;font-weight:700;color:var(--success);">
+          </div>
+          <div class="form-field">
+            <label>Total Profit (₹)</label>
+            <input type="number" id="fpTotalProfit" readonly style="background:#f0fff4;font-weight:700;color:var(--success);">
+          </div>
+        </div>
+        <div style="background:rgba(52,152,219,0.06);border:1px solid rgba(52,152,219,0.2);border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:12.5px;" id="fpSummaryBox" style="display:none;">
+          <i class="fas fa-info-circle" style="color:var(--info);"></i> <span id="fpSummaryText" style="color:var(--text-muted);">Quantity aur Amount bharein...</span>
+        </div>
+        <div class="form-row">
+          <div class="form-field"><label>Supplier</label><input type="text" id="fpSupplier" placeholder="HP Petroleum / IOC Supply"></div>
+          <div class="form-field"><label>Invoice No.</label><input type="text" id="fpInvNo" placeholder="INV-HP-001"></div>
+          <div class="form-field"><label>Payment Mode</label><select id="fpPayMode"><option>Credit</option><option>Cash</option><option>RTGS/NEFT</option></select></div>
+        </div>
+        <div class="btn-group no-print"><button class="btn btn-primary" onclick="saveFuelPurchase()"><i class="fas fa-save"></i> Save Purchase</button><button class="btn btn-outline" onclick="resetFuelPurchaseForm()"><i class="fas fa-undo"></i> Reset</button></div>
+      </div>
+
+      <!-- PURCHASE HISTORY -->
+      <div class="card"><div class="card-header"><div class="card-title"><i class="fas fa-history"></i> Purchase History</div></div>
+        <div class="table-wrap"><table><thead><tr><th>Date</th><th>Fuel</th><th>Qty (L)</th><th>Total (₹)</th><th>Cost/L</th><th>Sale/L</th><th>Margin/L</th><th>Total Profit</th><th>Supplier</th><th>Mode</th><th class="no-print">Action</th></tr></thead><tbody id="fuelPurchaseTbl"></tbody></table></div>
+      </div>
+
+      <div class="card"><div class="card-header"><div class="card-title"><i class="fas fa-oil-can"></i> Dip Stock Entry</div></div>
+        <div class="form-row"><div class="form-field"><label>Date</label><input type="date" id="dipDate"></div><div class="form-field"><label>Time</label><input type="time" id="dipTime"></div><div class="form-field"><label>Reading By</label><select id="dipBy"><option>Owner</option><option>Manager</option></select></div></div>
+        <div class="table-wrap" style="margin-bottom:14px;"><table><thead><tr><th>Tank</th><th>Fuel</th><th>Capacity</th><th>Dip (cm)</th><th>Dip Stock (L)</th><th>Book Stock</th><th>Diff</th></tr></thead><tbody id="dipTankTbl"></tbody></table></div>
+        <div class="btn-group no-print"><button class="btn btn-primary" onclick="saveDipEntry()"><i class="fas fa-save"></i> Save Dip Entry</button></div>
+      </div>
+      <div class="card"><div class="card-header"><div class="card-title">Dip History</div></div><div class="table-wrap"><table><thead><tr><th>Date</th><th>Tank</th><th>Dip Stock</th><th>Book Stock</th><th>Diff</th></tr></thead><tbody id="dipHistoryTbl"></tbody></table></div></div>
+    </div> <!-- end dipStock -->
+
+    <!-- SHORT EXCESS -->
+    <div id="page-shortExcess" class="section-page">
+      <div class="card"><div class="card-header"><div class="card-title"><i class="fas fa-balance-scale"></i> Short / Excess Entry</div></div>
+        <div class="form-row"><div class="form-field"><label>Date</label><input type="date" id="seDate"></div><div class="form-field"><label>Shift</label><select id="seShift"><option>Shift 1</option><option selected>Shift 2</option><option>Shift 3</option></select></div><div class="form-field"><label>Type</label><select id="seType"><option>Cash Short</option><option>Cash Excess</option><option>Fuel Short</option><option>Fuel Excess</option></select></div><div class="form-field"><label>Amount / Litres</label><input type="number" id="seAmt" placeholder="0.00"></div></div>
+        <div class="form-row"><div class="form-field"><label>Staff</label><select id="seStaff"><option>Ramesh Kumar</option><option>Suresh Yadav</option><option>Mohan Singh</option></select></div><div class="form-field"><label>Reason</label><input type="text" id="seReason" placeholder="Reason"></div><div class="form-field"><label>Recovery</label><select id="seRecovery"><option>Salary Deduction</option><option>Cash Deposit</option><option>Write-off</option></select></div></div>
+        <div class="btn-group no-print"><button class="btn btn-primary" onclick="saveSE()"><i class="fas fa-save"></i> Save Entry</button></div>
+      </div>
+      <div class="card"><div class="card-header"><div class="card-title">Short/Excess Register</div></div><div class="table-wrap"><table><thead><tr><th>#</th><th>Date</th><th>Shift</th><th>Type</th><th>Amount</th><th>Staff</th><th>Reason</th><th class="no-print">Action</th></tr></thead><tbody id="seRegTbl"></tbody></table></div></div>
+    </div>
+
+    <!-- DAY BOOK -->
+    <div id="page-dayBook" class="section-page"><div class="card"><div class="card-header"><div class="card-title"><i class="fas fa-calendar-day"></i> Day Book</div><div class="btn-group no-print"><input type="date" id="dbDate" style="padding:5px 9px;border:1px solid var(--border);border-radius:6px;font-size:12px;"><button class="btn btn-primary btn-sm" onclick="renderDayBook()">Load</button><button class="btn btn-outline btn-sm" onclick="window.print()"><i class="fas fa-print"></i></button></div></div><div id="dayBookContent"></div></div></div>
+
+    <!-- SALES REPORT -->
+    <div id="page-salesReport" class="section-page"><div class="card"><div class="card-header"><div class="card-title"><i class="fas fa-chart-line"></i> Sales Report</div></div><div id="salesReportContent"></div></div></div>
+
+    <!-- PENDING -->
+    <div id="page-pendingReport" class="section-page"><div class="card"><div class="card-header"><div class="card-title"><i class="fas fa-exclamation-circle"></i> Pending Collections</div><button class="btn btn-outline btn-sm no-print" onclick="window.print()"><i class="fas fa-print"></i> Print</button></div><div class="table-wrap"><table><thead><tr><th>Customer</th><th>Total Credit</th><th>Collected</th><th>Pending</th><th>Days</th><th class="no-print">Action</th></tr></thead><tbody id="pendingReportTbl"></tbody><tfoot id="pendingReportFoot"></tfoot></table></div></div></div>
+
+    <!-- FINANCIAL REPORTS -->
+    <div id="page-reports" class="section-page">
+      <div class="tabs"><div class="tab active" onclick="switchTab(this,'tabPnL')">P&L Account</div><div class="tab" onclick="switchTab(this,'tabBalSheet')">Balance Sheet</div></div>
+      <div id="tab-tabPnL"><div class="card"><div class="card-header"><div class="card-title">Profit & Loss</div></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;" id="pnlContent"></div></div></div>
+      <div id="tab-tabBalSheet" style="display:none;"><div class="card"><div class="card-header"><div class="card-title">Balance Sheet</div></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;" id="balSheetContent"></div></div></div>
+    </div>
+
+    <!-- STOCK REPORTS -->
+    <div id="page-stockReports" class="section-page">
+      <div class="tabs"><div class="tab active" onclick="switchTab(this,'tabStockSum')">Stock Summary</div><div class="tab" onclick="switchTab(this,'tabCloseStock')">Closing Stock</div></div>
+      <div id="tab-tabStockSum"><div class="card"><div class="card-header"><div class="card-title">Stock Summary</div></div><div class="table-wrap"><table><thead><tr><th>Item</th><th>Opening</th><th>Purchase</th><th>Sales</th><th>Closing</th><th>Value</th></tr></thead><tbody id="stockSumTbl"></tbody></table></div></div></div>
+      <div id="tab-tabCloseStock" style="display:none;"><div class="card"><div class="card-header"><div class="card-title">Closing Stock</div></div><div id="closingStockContent"></div></div></div>
+    </div>
+
+    <!-- GST -->
+    <div id="page-gst" class="section-page">
+      <div class="tabs"><div class="tab active" onclick="switchTab(this,'tabGSTR1')">GSTR-1</div><div class="tab" onclick="switchTab(this,'tabGSTR3B')">GSTR-3B</div></div>
+      <div id="tab-tabGSTR1"><div class="card"><div class="card-header"><div class="card-title">GSTR-1 Outward Supply <span class="gst-tag">GST</span></div></div><div class="table-wrap"><table><thead><tr><th>Invoice No</th><th>Date</th><th>Customer</th><th>Taxable</th><th>CGST</th><th>SGST</th><th>Total</th></tr></thead><tbody id="gstr1Tbl"></tbody></table></div></div></div>
+      <div id="tab-tabGSTR3B" style="display:none;"><div class="card"><div class="card-header"><div class="card-title">GSTR-3B Summary</div></div><div id="gstr3bContent"></div></div></div>
+    </div>
+
+    <!-- MASTERS -->
+    <div id="page-masters" class="section-page">
+      <div class="tabs"><div class="tab active" onclick="switchTab(this,'tabCust')">Customers</div><div class="tab" onclick="switchTab(this,'tabSupp')">Suppliers</div><div class="tab" onclick="switchTab(this,'tabStaff')">Staff</div></div>
+      <div id="tab-tabCust">
+        <div class="card"><div class="card-header"><div class="card-title">Add Customer</div></div><div class="form-row"><div class="form-field"><label>Name</label><input type="text" id="custName" placeholder="Full name"></div><div class="form-field"><label>Phone</label><input type="tel" id="custPhone" placeholder="Mobile"></div><div class="form-field"><label>GSTIN</label><input type="text" id="custGST" placeholder="GST No."></div><div class="form-field"><label>Credit Limit (₹)</label><input type="number" id="custLimit" placeholder="50000"></div></div><div class="btn-group no-print"><button class="btn btn-primary" onclick="addCustomer()"><i class="fas fa-plus"></i> Add Customer</button></div></div>
+        <div class="card"><div class="card-header"><div class="card-title">Customer List</div></div><div class="table-wrap"><table><thead><tr><th>#</th><th>Name</th><th>Phone</th><th>GSTIN</th><th>Limit</th><th>Outstanding</th><th class="no-print">Action</th></tr></thead><tbody id="custMasterTbl"></tbody></table></div></div>
+      </div>
+      <div id="tab-tabSupp" style="display:none;"><div class="card"><div class="card-header"><div class="card-title">Suppliers</div></div><div class="table-wrap"><table><thead><tr><th>Name</th><th>Phone</th><th>GSTIN</th><th>Payable</th></tr></thead><tbody><tr><td>HP Petroleum</td><td>011-26182820</td><td>07HPPCL1234A1Z5</td><td>₹15,000</td></tr><tr><td>IOC Supply</td><td>011-26177840</td><td>07IOCL5678B1Z2</td><td>₹10,000</td></tr></tbody></table></div></div></div>
+      <div id="tab-tabStaff" style="display:none;"><div class="card"><div class="card-header"><div class="card-title">Staff List</div></div><div class="table-wrap"><table><thead><tr><th>Name</th><th>Role</th><th>Phone</th><th>Salary</th></tr></thead><tbody><tr><td>Ramesh Kumar</td><td>Salesman</td><td>9988776655</td><td>₹13,500</td></tr><tr><td>Suresh Yadav</td><td>Salesman</td><td>9988776656</td><td>₹13,500</td></tr><tr><td>Mohan Singh</td><td>Manager</td><td>9988776657</td><td>₹24,000</td></tr></tbody></table></div></div></div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div id="page-settings" class="section-page"><div class="card"><div class="card-header"><div class="card-title"><i class="fas fa-cog"></i> System Settings</div><span class="lock-badge"><i class="fas fa-lock"></i> Owner Only</span></div><div class="form-row"><div class="form-field"><label>Company Name</label><input type="text" value="Jai Gurudev Kisan Seva Kendra"></div><div class="form-field"><label>License No.</label><input type="text" value="PP-UP-2022-0042"></div><div class="form-field"><label>GSTIN</label><input type="text" value="09ABCDE1234F1Z5"></div><div class="form-field"><label>Phone</label><input type="tel" value="+91 98765 43210"></div></div><div class="form-row"><div class="form-field"><label>Address</label><input type="text" value="NH-58, Mawana Road, Meerut, UP 250001"></div></div><div class="card-header" style="margin-top:14px;border-top:1px solid var(--border);padding-top:14px;"><div class="card-title">User Accounts</div></div><div class="table-wrap"><table><thead><tr><th>Username</th><th>Role</th><th>Status</th></tr></thead><tbody><tr><td>owner</td><td><span class="badge badge-orange">Owner</span></td><td><span class="badge badge-success">Active</span></td></tr><tr><td>manager</td><td><span class="badge badge-info">Manager</span></td><td><span class="badge badge-success">Active</span></td></tr><tr><td>cashier</td><td><span class="badge badge-warning">Cashier</span></td><td><span class="badge badge-success">Active</span></td></tr><tr><td>sales</td><td><span class="badge badge-success">Salesman</span></td><td><span class="badge badge-success">Active</span></td></tr></tbody></table></div><div class="btn-group no-print" style="margin-top:14px;"><button class="btn btn-primary" onclick="showToast('Settings saved!')"><i class="fas fa-save"></i> Save Settings</button></div></div></div>
+
+  </div>
+</div>
+</div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modalOverlay" style="display:none;" onclick="if(event.target===this)closeModal()">
+  <div class="modal"><div class="modal-header"><div class="modal-title" id="modalTitle"></div><button class="modal-close" onclick="closeModal()">✕</button></div><div id="modalBody"></div></div>
+</div>
+<div id="toast"></div>
+
+<script>
+// ============================================================
+// FIREBASE INIT (Compat SDK — no module needed)
+// ============================================================
+var firebaseConfig = {
+  apiKey:            "AIzaSyBVwmzWU41LDzqYzg-MLacYy0dcpKKzN3c",
+  authDomain:        "mypumpappp.firebaseapp.com",
+  projectId:         "mypumpappp",
+  storageBucket:     "mypumpappp.firebasestorage.app",
+  messagingSenderId: "745135074294",
+  appId:             "1:745135074294:web:aa6d5208d1a1ad5547b5d7"
+};
+firebase.initializeApp(firebaseConfig);
+var rtdb = firebase.database();
+
+// ── Realtime Database helpers ──────────────────────────────────────────
+function fbSet(col, id, data) {
+  return rtdb.ref(col + '/' + String(id)).set(Object.assign({}, data, {_ts: Date.now()}))
+    .catch(function(e){ console.error('fbSet',col,e); });
+}
+function fbDel(col, id) {
+  return rtdb.ref(col + '/' + String(id)).remove()
+    .catch(function(e){ console.error('fbDel',col,e); });
+}
+function fbGetAll(col) {
+  return rtdb.ref(col).once('value')
+    .then(function(snap){
+      var val = snap.val();
+      return val ? Object.values(val) : [];
+    })
+    .catch(function(e){ console.error('fbGetAll',col,e); return []; });
+}
+function fbListen(col, cb) {
+  rtdb.ref(col).on('value', function(snap){
+    var val = snap.val();
+    cb(val ? Object.values(val) : []);
+  }, function(e){ console.error('fbListen',col,e); });
+}
+
+function setFbStatus(on) {
+  var el = document.getElementById('fbBadge');
+  el.textContent = on ? '🟢 Firebase Online' : '🔴 Offline Mode';
+  el.className = 'fb-badge ' + (on ? 'fb-on' : 'fb-off');
+}
+
+// ============================================================
+// CREDENTIALS
+// ============================================================
+var USERS = {
+  owner:   { pass:'owner@123',  role:'Owner'   },
+  manager: { pass:'mgr@123',    role:'Manager' },
+  cashier: { pass:'cash@123',   role:'Cashier' },
+  sales:   { pass:'sales@123',  role:'Salesman'}
+};
+var OWNER_PIN = '1234';
+
+// ============================================================
+// APP STATE
+// ============================================================
+var S = {
+  currentUser:null, currentRole:null, isOwner:false, pinCallback:null,
+  sales:[], expenses:[], collections:[], customers:[], invoices:[],
+  salaries:[], seEntries:[], dipHistory:[], jvEntries:[],
+  fuelRates:{ Petrol:104.52, Diesel:91.76, HSD:89.80 },
+  rateHistory:[],
+  tanks:[
+    {name:'Tank 1',fuel:'Petrol',cap:10000,stock:7200,dip:142},
+    {name:'Tank 2',fuel:'Diesel',cap:10000,stock:5500,dip:108},
+    {name:'Tank 3',fuel:'Diesel',cap:10000,stock:3000,dip:62}
+  ],
+  cashBook:[
+    {date:'15/01',part:'Opening Balance',voucher:'-',dr:45000,cr:0,bal:45000},
+    {date:'15/01',part:'Cash Sales',voucher:'SL-001',dr:42800,cr:0,bal:87800},
+    {date:'15/01',part:'Electricity Bill',voucher:'EXP-141',dr:0,cr:2800,bal:85000},
+    {date:'15/01',part:'Collection',voucher:'REC-283',dr:4200,cr:0,bal:89200},
+    {date:'15/01',part:'Salary - Ramesh',voucher:'SAL-015',dr:0,cr:1980,bal:87220}
+  ],
+  bankBook:[
+    {date:'15/01',part:'Opening Balance',ref:'-',credit:262000,debit:0,bal:262000},
+    {date:'15/01',part:'Card Payments',ref:'POS-8821',credit:22140,debit:0,bal:284140},
+    {date:'15/01',part:'NEFT - Verma',ref:'NEFT/001842',credit:10000,debit:0,bal:294140},
+    {date:'15/01',part:'Supplier HP',ref:'RTGS/4421',credit:0,debit:10000,bal:284140}
+  ],
+  nextInvNo:842, nextRecNo:284, nextJvNo:48, nextSaleId:1
+};
+
+// ============================================================
+// UTILITIES
+// ============================================================
+function fmt(n){ return Number(n).toLocaleString('en-IN'); }
+function today(){ return new Date().toISOString().split('T')[0]; }
+function nowTime(){ var d=new Date(); return pad(d.getHours())+':'+pad(d.getMinutes()); }
+function pad(n){ return String(n).padStart(2,'0'); }
+function uid(){ return String(Date.now()+Math.floor(Math.random()*9000)); }
+function modeBadge(m){ var c={Cash:'badge-success','Card/UPI':'badge-info',Credit:'badge-warning'}; return '<span class="badge '+(c[m]||'badge-info')+'">'+m+'</span>'; }
+function dayBadge(d){ var c=d>20?'badge-danger':d>10?'badge-warning':'badge-info'; return '<span class="badge '+c+'">'+d+'d</span>'; }
+
+function showToast(msg,type){
+  type=type||'success';
+  var t=document.getElementById('toast');
+  t.textContent=(type==='success'?'✅ ':type==='warning'?'⚠️ ':'❌ ')+msg;
+  t.style.display='block';
+  t.style.borderLeftColor=type==='success'?'var(--success)':type==='warning'?'var(--warning)':'var(--danger)';
+  clearTimeout(t._t); t._t=setTimeout(function(){t.style.display='none';},3500);
+}
+function showNotif(){ showToast(S.customers.filter(function(c){return c.outstanding>0;}).length+' pending collections!','warning'); }
+function closeModal(){ document.getElementById('modalOverlay').style.display='none'; }
+
+function editBtn(onEdit,onDel){
+  if(S.isOwner) return '<div style="display:flex;gap:4px;"><button class="btn btn-sm btn-outline" onclick="'+onEdit+'" title="Edit">✏</button><button class="btn btn-sm btn-danger" onclick="'+onDel+'" title="Delete">🗑</button></div>';
+  return '<span class="lock-badge"><i class="fas fa-lock"></i> Locked</span>';
+}
+
+function showPage(page){
+  document.querySelectorAll('.section-page').forEach(function(p){p.classList.remove('active');});
+  document.querySelectorAll('.nav-item').forEach(function(n){n.classList.remove('active');});
+  var el=document.getElementById('page-'+page); if(el) el.classList.add('active');
+  var titles={dashboard:'Dashboard',saleEntry:'Sale Entry',expenses:'Cash Expenses',billing:'Billing',rateChange:'Rate Change',creditCollection:'Credit Collection',journalEntry:'Journal / Cash Book',salaryEntry:'Staff Salary',dipStock:'Dip Stock',shortExcess:'Short/Excess',dayBook:'Day Book',salesReport:'Sales Report',pendingReport:'Pending Collections',reports:'Financial Reports',stockReports:'Stock Reports',gst:'GST Returns',masters:'Masters',settings:'Settings'};
+  document.getElementById('pageTitle').textContent=titles[page]||page;
+  document.querySelectorAll('.nav-item').forEach(function(n){if(n.getAttribute('onclick')&&n.getAttribute('onclick').includes("'"+page+"'"))n.classList.add('active');});
+  window.scrollTo(0,0);
+}
+
+function switchTab(el,tabId){
+  el.parentElement.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active');}); el.classList.add('active');
+  var sec=el.closest('.section-page')||document.querySelector('.section-page.active');
+  if(sec){sec.querySelectorAll('[id^="tab-"]').forEach(function(t){t.style.display='none';});var tgt=sec.querySelector('#tab-'+tabId);if(tgt)tgt.style.display='block';}
+}
+
+// ============================================================
+// OWNER PIN
+// ============================================================
+function requireOwnerAuth(callback,reason){
+  if(S.isOwner){callback();return;}
+  S.pinCallback=callback;
+  document.getElementById('pinMsg').textContent=(reason||'Sirf Owner kar sakta hai.')+'\nOwner PIN:';
+  document.getElementById('pinInput').value='';
+  document.getElementById('pinError').style.display='none';
+  document.getElementById('pinOverlay').style.display='flex';
+  document.getElementById('pinInput').focus();
+}
+function verifyOwnerPin(){
+  if(document.getElementById('pinInput').value===OWNER_PIN){
+    document.getElementById('pinOverlay').style.display='none';
+    if(S.pinCallback)S.pinCallback();
+  }else{
+    document.getElementById('pinError').style.display='block';
+    document.getElementById('pinInput').value='';
+  }
+}
+function closePinOverlay(){ document.getElementById('pinOverlay').style.display='none'; S.pinCallback=null; }
+
+// ============================================================
+// LOGIN
+// ============================================================
+function doLogin(){
+  var u=document.getElementById('loginUser').value.trim();
+  var p=document.getElementById('loginPass').value.trim();
+  if(!u||!p){showToast('Username aur password dono bharein','error');return;}
+  var user=USERS[u];
+  if(!user||user.pass!==p){showToast('Galat username ya password!','error');return;}
+  S.currentUser=u; S.currentRole=user.role; S.isOwner=(user.role==='Owner');
+  document.getElementById('loginPage').style.display='none';
+  document.getElementById('app').style.display='block';
+  document.getElementById('sbAvatar').textContent=u[0].toUpperCase();
+  document.getElementById('sbName').textContent=S.isOwner?'Owner (Admin)':u;
+  document.getElementById('sbRole').textContent=user.role;
+  setTodayDates();
+  if(!S.isOwner){document.getElementById('navSettings').style.opacity='0.4';document.getElementById('navSettings').onclick=function(){showToast('Settings sirf Owner access kar sakta hai','error');};}
+  showToast('Loading data from Firebase...','warning');
+  loadAllFromFirebase();
+}
+
+function doLogout(){ if(confirm('Logout karna chahte hain?')) location.reload(); }
+
+function setTodayDates(){
+  var t=today();
+  ['sDate','expDate','invDate','recDate','dipDate','jvDate','seDate','dbDate','fpDate'].forEach(function(id){var el=document.getElementById(id);if(el)el.value=t;});
+  var now=new Date(); var el=document.getElementById('dipTime');
+  if(el) el.value=pad(now.getHours())+':'+pad(now.getMinutes());
+}
+
+// ============================================================
+// LOAD FROM FIREBASE
+// ============================================================
+function loadAllFromFirebase(){
+  Promise.all([
+    fbGetAll('sales'), fbGetAll('expenses'), fbGetAll('collections'),
+    fbGetAll('customers'), fbGetAll('invoices'), fbGetAll('salaries'),
+    fbGetAll('shortExcess'), fbGetAll('dipHistory'), fbGetAll('journals'),
+    fbGetAll('tanks'), fbGetAll('fuelRates'), fbGetAll('rateHistory'), fbGetAll('fuelPurchases')
+  ]).then(function(results){
+    var sales=results[0],expenses=results[1],collections=results[2],customers=results[3];
+    var invoices=results[4],salaries=results[5],seEntries=results[6],dipHistory=results[7];
+    var jvEntries=results[8],tanks=results[9],rates=results[10],rateHist=results[11],fuelPurchases=results[12];
+
+    if(sales.length) S.sales=sales.sort(function(a,b){return (b._ts||0)-(a._ts||0);});
+    if(expenses.length) S.expenses=expenses.sort(function(a,b){return (b._ts||0)-(a._ts||0);});
+    if(collections.length) S.collections=collections.sort(function(a,b){return (b._ts||0)-(a._ts||0);});
+    if(customers.length) S.customers=customers;
+    if(invoices.length) S.invoices=invoices.sort(function(a,b){return (b._ts||0)-(a._ts||0);});
+    if(salaries.length) S.salaries=salaries;
+    if(seEntries.length) S.seEntries=seEntries;
+    if(dipHistory.length) S.dipHistory=dipHistory.sort(function(a,b){return (b._ts||0)-(a._ts||0);});
+    if(jvEntries.length) S.jvEntries=jvEntries;
+    if(tanks.length) S.tanks=tanks;
+    if(rates.length) rates.forEach(function(r){if(r.fuel&&r.rate)S.fuelRates[r.fuel]=r.rate;});
+    if(rateHist.length) S.rateHistory=rateHist.sort(function(a,b){return (b._ts||0)-(a._ts||0);});
+    if(fuelPurchases&&fuelPurchases.length) S.fuelPurchases=fuelPurchases.sort(function(a,b){return (b._ts||0)-(a._ts||0);});
+
+    // Recalc IDs
+    S.sales.forEach(function(s){if((s.id||0)>=S.nextSaleId)S.nextSaleId=s.id+1;});
+    S.invoices.forEach(function(i){var n=parseInt((i.no||'').replace(/\D/g,''));if(n>=S.nextInvNo)S.nextInvNo=n+1;});
+    S.collections.forEach(function(c){var n=parseInt((c.recNo||'').replace(/\D/g,''));if(n>=S.nextRecNo)S.nextRecNo=n+1;});
+    S.jvEntries.forEach(function(j){var n=parseInt((j.no||'').replace(/\D/g,''));if(n>=S.nextJvNo)S.nextJvNo=n+1;});
+
+    setFbStatus(true);
+    startRealtimeListeners();
+    initAllPages();
+    showToast('Welcome '+S.currentUser+'! Firebase connected ✅');
+  }).catch(function(e){
+    console.error('Firebase load error:',e);
+    setFbStatus(false);
+    initAllPages();
+    showToast('Offline mode — local data use ho raha hai','warning');
+  });
+}
+
+// ============================================================
+// REALTIME LISTENERS
+// ============================================================
+function startRealtimeListeners(){
+  fbListen('sales',function(data){if(data.length){S.sales=data.sort(function(a,b){return (b._ts||0)-(a._ts||0);});renderSalesTable();renderDashboard();}});
+  fbListen('expenses',function(data){if(data.length){S.expenses=data.sort(function(a,b){return (b._ts||0)-(a._ts||0);});renderExpenseTable();}});
+  fbListen('collections',function(data){if(data.length){S.collections=data.sort(function(a,b){return (b._ts||0)-(a._ts||0);});renderCollectionTable();}});
+  fbListen('customers',function(data){if(data.length){S.customers=data;renderCustomerTable();renderPendingReport();renderDashboard();}});
+  fbListen('invoices',function(data){if(data.length){S.invoices=data.sort(function(a,b){return (b._ts||0)-(a._ts||0);});renderInvoiceHistory();}});
+  fbListen('salaries',function(data){if(data.length){S.salaries=data;renderSalaryTable();}});
+  fbListen('shortExcess',function(data){if(data.length){S.seEntries=data;renderSETable();}});
+  fbListen('journals',function(data){if(data.length){S.jvEntries=data;renderJVTable();}});
+}
+
+// ============================================================
+// INIT ALL PAGES
+// ============================================================
+function initAllPages(){
+  renderDashboard(); renderSaleForm(); renderExpenseTable(); renderBillingForm();
+  renderRateChange(); renderCreditCollection(); renderJournal();
+  renderSalary(); renderDipStock(); renderSETable(); renderDayBook();
+  renderSalesReport(); renderStockReports(); renderPendingReport();
+  renderFinancialReports(); renderGST(); renderMasters();
+}
+
+// ============================================================
+// DASHBOARD
+// ============================================================
+function renderDashboard(){
+  var totalSale=S.sales.reduce(function(s,e){return s+Number(e.amount||0);},0);
+  var totalQty=S.sales.reduce(function(s,e){return s+Number(e.qty||0);},0);
+  var cashSale=S.sales.filter(function(e){return e.mode==='Cash';}).reduce(function(s,e){return s+Number(e.amount||0);},0);
+  var cardSale=S.sales.filter(function(e){return e.mode==='Card/UPI';}).reduce(function(s,e){return s+Number(e.amount||0);},0);
+  var creditPen=S.customers.reduce(function(s,c){return s+Number(c.outstanding||0);},0);
+  document.getElementById('dashStats').innerHTML=
+    '<div class="stat-card"><div class="stat-icon orange"><i class="fas fa-rupee-sign"></i></div><div class="stat-value">₹'+fmt(totalSale)+'</div><div class="stat-label">Today\'s Sales</div><div class="stat-sub">'+totalQty+'L sold</div></div>'+
+    '<div class="stat-card"><div class="stat-icon green"><i class="fas fa-money-bill-wave"></i></div><div class="stat-value">₹'+fmt(cashSale)+'</div><div class="stat-label">Cash Sales</div></div>'+
+    '<div class="stat-card"><div class="stat-icon blue"><i class="fas fa-credit-card"></i></div><div class="stat-value">₹'+fmt(cardSale)+'</div><div class="stat-label">Card/UPI Today</div></div>'+
+    '<div class="stat-card"><div class="stat-icon red"><i class="fas fa-users"></i></div><div class="stat-value">₹'+fmt(creditPen)+'</div><div class="stat-label">Credit Pending</div><div class="stat-sub neg">'+S.customers.filter(function(c){return c.outstanding>0;}).length+' customers</div></div>'+
+    '<div class="stat-card"><div class="stat-icon yellow"><i class="fas fa-chart-line"></i></div><div class="stat-value">₹'+fmt(Math.round(totalSale*0.099))+'</div><div class="stat-label">Est. Profit</div></div>';
+
+  var colors=['rgba(52,152,219,0.7)','rgba(46,194,126,0.7)','rgba(230,92,0,0.7)'];
+  document.getElementById('tankCards').innerHTML=S.tanks.map(function(t,i){
+    var pct=Math.round(t.stock/t.cap*100);
+    return '<div style="border:1px solid var(--border);border-radius:10px;overflow:hidden;"><div style="padding:7px 10px;background:'+colors[i].replace('0.7','0.12')+';font-size:11px;font-weight:700;">'+(t.fuel==='Petrol'?'🔵':'🟢')+' '+t.name+'</div><div style="padding:8px;"><div class="tank-level"><div class="tank-fill" style="height:'+pct+'%;background:'+colors[i]+';"><div class="tank-percent">'+pct+'%</div></div></div><div style="font-size:10px;text-align:center;"><b>'+t.stock.toLocaleString()+'L</b>/'+t.cap.toLocaleString()+'L</div>'+(pct<35?'<div style="font-size:9px;text-align:center;color:var(--danger);">⚠ Low!</div>':'')+'</div></div>';
+  }).join('');
+
+  var shiftSales=S.sales.filter(function(s){return s.shift&&s.shift.includes('2');});
+  document.getElementById('activeShiftInfo').innerHTML=
+    '<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);font-size:12px;"><span>Salesman:</span><b>Ramesh Kumar</b></div>'+
+    '<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);font-size:12px;"><span>Fuel Sold:</span><b>'+shiftSales.reduce(function(s,e){return s+Number(e.qty||0);},0)+'L</b></div>'+
+    '<div style="display:flex;justify-content:space-between;padding:5px 0;font-size:12px;"><span>Amount:</span><b>₹'+fmt(shiftSales.reduce(function(s,e){return s+Number(e.amount||0);},0))+'</b></div>';
+
+  document.getElementById('recentSalesTbl').innerHTML=S.sales.slice(0,5).map(function(s){
+    return '<tr><td>'+(s.time||'')+'</td><td>'+s.fuel+'</td><td>'+s.qty+'</td><td>₹'+fmt(s.amount)+'</td><td>'+modeBadge(s.mode)+'</td></tr>';
+  }).join('');
+
+  var pc=S.customers.filter(function(c){return c.outstanding>0;});
+  document.getElementById('pendingBadge').textContent=pc.length;
+  document.getElementById('pendingDashTbl').innerHTML=pc.map(function(c){
+    return '<tr><td><b>'+c.name+'</b></td><td style="color:var(--danger);">₹'+fmt(c.outstanding)+'</td><td>'+dayBadge(c.days||0)+'</td><td class="no-print"><button class="btn btn-sm btn-success" onclick="showPage(\'creditCollection\')">Collect</button></td></tr>';
+  }).join('');
+}
+
+// ============================================================
+// SALE ENTRY
+// ============================================================
+function renderSaleForm(){
+  var sel=document.getElementById('sCust');
+  sel.innerHTML='<option>-- Select --</option>'+S.customers.map(function(c){return '<option>'+c.name+'</option>';}).join('');
+  document.getElementById('sRate').value=S.fuelRates['Petrol'];
+  renderSalesTable();
+}
+function renderSalesTable(){
+  var total=S.sales.reduce(function(s,e){return s+Number(e.amount||0);},0);
+  var qty=S.sales.reduce(function(s,e){return s+Number(e.qty||0);},0);
+  document.getElementById('saleSummary').textContent='Total: ₹'+fmt(total)+' | '+qty+'L';
+  document.getElementById('salesRegisterTbl').innerHTML=S.sales.map(function(s,i){
+    return '<tr><td>'+(i+1)+'</td><td>'+(s.time||'')+'</td><td>'+s.fuel+'</td><td>'+s.qty+'</td><td>'+s.rate+'</td><td>₹'+fmt(s.amount)+'</td><td>'+modeBadge(s.mode)+'</td><td>'+(s.customer||'-')+'</td><td class="no-print">'+editBtn('editSale("'+s.fbId+'")', 'deleteSale("'+s.fbId+'")')+'</td></tr>';
+  }).join('');
+}
+function updateFuelRate(){ document.getElementById('sRate').value=S.fuelRates[document.getElementById('sFuel').value]||0; calcSale(); }
+function calcSale(){ document.getElementById('sAmt').value=((parseFloat(document.getElementById('sQty').value)||0)*(parseFloat(document.getElementById('sRate').value)||0)).toFixed(2); }
+function toggleCreditFields(){ document.getElementById('creditFields').style.display=document.getElementById('sMode').value==='Credit'?'block':'none'; }
+
+function saveSale(){
+  var qty=parseFloat(document.getElementById('sQty').value);
+  var rate=parseFloat(document.getElementById('sRate').value);
+  var fuel=document.getElementById('sFuel').value;
+  var mode=document.getElementById('sMode').value;
+  if(!qty||qty<=0){showToast('Valid quantity enter karein','error');return;}
+  var amount=parseFloat((qty*rate).toFixed(2));
+  var customer=mode==='Credit'?document.getElementById('sCust').value:'-';
+  if(mode==='Credit'&&customer==='-- Select --'){showToast('Credit ke liye customer select karein','error');return;}
+  var fbId=uid();
+  var entry={fbId:fbId,id:S.nextSaleId++,time:nowTime(),date:document.getElementById('sDate').value,fuel:fuel,nozzle:document.getElementById('sNozzle').value,shift:document.getElementById('sShift').value,qty:qty,rate:rate,amount:amount,mode:mode,customer:customer,vehicle:document.getElementById('sVehicle').value||'',remarks:document.getElementById('sRemarks').value||'',lockedBy:S.currentUser};
+  S.sales.unshift(entry);
+  renderSalesTable(); renderDashboard();
+  if(mode==='Credit'){var c=S.customers.find(function(c){return c.name===customer;});if(c){c.outstanding=Number(c.outstanding||0)+amount;fbSet('customers',c.name,c);renderPendingReport();}}
+  var tank=S.tanks.find(function(t){return t.fuel===fuel;});if(tank){tank.stock=Math.max(0,tank.stock-qty);fbSet('tanks',tank.name,tank);}
+  fbSet('sales',fbId,entry);
+  resetSaleForm();
+  showToast('Sale saved! '+qty+'L '+fuel+' = ₹'+fmt(amount));
+}
+function editSale(fbId){
+  requireOwnerAuth(function(){
+    var s=S.sales.find(function(e){return e.fbId===fbId;}); if(!s)return;
+    document.getElementById('modalTitle').textContent='Edit Sale Entry';
+    document.getElementById('modalBody').innerHTML='<div class="form-row"><div class="form-field"><label>Fuel</label><input type="text" id="es_fuel" value="'+s.fuel+'"></div><div class="form-field"><label>Qty (L)</label><input type="number" id="es_qty" value="'+s.qty+'"></div><div class="form-field"><label>Rate</label><input type="number" id="es_rate" value="'+s.rate+'"></div></div><div class="form-row"><div class="form-field"><label>Mode</label><select id="es_mode"><option '+(s.mode==='Cash'?'selected':'')+'>Cash</option><option '+(s.mode==='Card/UPI'?'selected':'')+'>Card/UPI</option><option '+(s.mode==='Credit'?'selected':'')+'>Credit</option></select></div><div class="form-field"><label>Customer</label><input type="text" id="es_cust" value="'+(s.customer||'-')+'"></div></div><div class="btn-group" style="margin-top:12px;"><button class="btn btn-primary" onclick="updateSale(\''+fbId+'\')"><i class="fas fa-save"></i> Update</button><button class="btn btn-outline" onclick="closeModal()">Cancel</button></div>';
+    document.getElementById('modalOverlay').style.display='flex';
+  },'Sale edit ke liye Owner PIN required.');
+}
+function updateSale(fbId){
+  var s=S.sales.find(function(e){return e.fbId===fbId;}); if(!s)return;
+  s.fuel=document.getElementById('es_fuel').value;
+  s.qty=parseFloat(document.getElementById('es_qty').value);
+  s.rate=parseFloat(document.getElementById('es_rate').value);
+  s.amount=parseFloat((s.qty*s.rate).toFixed(2));
+  s.mode=document.getElementById('es_mode').value;
+  s.customer=document.getElementById('es_cust').value;
+  closeModal(); renderSalesTable(); renderDashboard();
+  fbSet('sales',fbId,s);
+  showToast('Sale updated!');
+}
+function deleteSale(fbId){
+  requireOwnerAuth(function(){
+    if(confirm('Sale delete karna chahte hain?')){
+      S.sales=S.sales.filter(function(e){return e.fbId!==fbId;});
+      renderSalesTable(); renderDashboard();
+      fbDel('sales',fbId);
+      showToast('Sale deleted!');
+    }
+  },'Sale delete ke liye Owner PIN required.');
+}
+function resetSaleForm(){ ['sQty','sAmt','sRemarks','sVehicle'].forEach(function(id){document.getElementById(id).value='';}); document.getElementById('sMode').value='Cash'; document.getElementById('creditFields').style.display='none'; document.getElementById('sRate').value=S.fuelRates[document.getElementById('sFuel').value]; }
+
+// ============================================================
+// EXPENSES
+// ============================================================
+function renderExpenseTable(){
+  var total=S.expenses.reduce(function(s,e){return s+Number(e.amount||0);},0);
+  document.getElementById('expTotal').textContent='Total: ₹'+fmt(total);
+  document.getElementById('expenseRegTbl').innerHTML=S.expenses.map(function(e,i){
+    return '<tr><td>'+(i+1)+'</td><td>'+(e.date||'')+'</td><td>'+(e.head||'')+'</td><td>'+(e.narr||'')+'</td><td>₹'+fmt(e.amount)+'</td><td>'+(e.paid||'')+'</td><td>'+(e.staff||'')+'</td><td class="no-print">'+editBtn('editExpense("'+e.fbId+'")', 'deleteExpense("'+e.fbId+'")')+'</td></tr>';
+  }).join('');
+}
+function saveExpense(){
+  var amt=parseFloat(document.getElementById('expAmt').value);
+  if(!amt||amt<=0){showToast('Valid amount enter karein','error');return;}
+  var fbId=uid();
+  var entry={fbId:fbId,date:document.getElementById('expDate').value,head:document.getElementById('expHead').value,narr:document.getElementById('expNarr').value,amount:amt,paid:document.getElementById('expPaid').value,staff:document.getElementById('expStaff').value,lockedBy:S.currentUser};
+  S.expenses.unshift(entry); renderExpenseTable();
+  fbSet('expenses',fbId,entry);
+  resetExpForm();
+  showToast('Expense saved: ₹'+fmt(amt));
+}
+function editExpense(fbId){
+  requireOwnerAuth(function(){
+    var e=S.expenses.find(function(x){return x.fbId===fbId;}); if(!e)return;
+    document.getElementById('modalTitle').textContent='Edit Expense';
+    document.getElementById('modalBody').innerHTML='<div class="form-row"><div class="form-field"><label>Head</label><input type="text" id="ee_head" value="'+e.head+'"></div><div class="form-field"><label>Amount</label><input type="number" id="ee_amt" value="'+e.amount+'"></div></div><div class="form-row"><div class="form-field"><label>Narration</label><input type="text" id="ee_narr" value="'+(e.narr||'')+'"></div></div><div class="btn-group" style="margin-top:12px;"><button class="btn btn-primary" onclick="updateExpense(\''+fbId+'\')"><i class="fas fa-save"></i> Update</button><button class="btn btn-outline" onclick="closeModal()">Cancel</button></div>';
+    document.getElementById('modalOverlay').style.display='flex';
+  },'Expense edit ke liye Owner PIN required.');
+}
+function updateExpense(fbId){
+  var e=S.expenses.find(function(x){return x.fbId===fbId;}); if(!e)return;
+  e.head=document.getElementById('ee_head').value; e.amount=parseFloat(document.getElementById('ee_amt').value); e.narr=document.getElementById('ee_narr').value;
+  closeModal(); renderExpenseTable(); fbSet('expenses',fbId,e); showToast('Expense updated!');
+}
+function deleteExpense(fbId){
+  requireOwnerAuth(function(){
+    if(confirm('Delete?')){ S.expenses=S.expenses.filter(function(e){return e.fbId!==fbId;}); renderExpenseTable(); fbDel('expenses',fbId); showToast('Expense deleted!'); }
+  },'Delete ke liye Owner PIN required.');
+}
+function resetExpForm(){ document.getElementById('expAmt').value=''; document.getElementById('expNarr').value=''; }
+
+// ============================================================
+// BILLING
+// ============================================================
+var billRowId=0;
+function renderBillingForm(){
+  document.getElementById('invNo').value='INV-2025-0'+S.nextInvNo;
+  var sel=document.getElementById('invCust');
+  sel.innerHTML='<option>Walk-in Customer</option>'+S.customers.map(function(c){return '<option>'+c.name+'</option>';}).join('');
+  addBillRow(); renderInvoiceHistory();
+}
+function addBillRow(){
+  var id=billRowId++; var tr=document.createElement('tr'); tr.id='brow'+id;
+  tr.innerHTML='<td><select class="bFuel" onchange="calcBR('+id+')"><option>Petrol</option><option>Diesel</option></select></td><td><input type="number" class="bQty" value="10" style="width:60px;padding:5px;border:1px solid var(--border);border-radius:5px;" oninput="calcBR('+id+')"></td><td><input type="number" class="bRate" value="'+S.fuelRates['Petrol']+'" style="width:75px;padding:5px;border:1px solid var(--border);border-radius:5px;" oninput="calcBR('+id+')"></td><td class="bTax">₹0</td><td class="bGst">₹0</td><td class="bTot"><b>₹0</b></td><td class="no-print"><button class="btn btn-sm btn-danger" onclick="this.closest(\'tr\').remove();calcBTotals()">✕</button></td>';
+  document.getElementById('billItemsTbl').appendChild(tr); calcBR(id);
+}
+function calcBR(id){
+  var row=document.getElementById('brow'+id); if(!row)return;
+  var q=parseFloat(row.querySelector('.bQty').value)||0,r=parseFloat(row.querySelector('.bRate').value)||0;
+  var tax=q*r,gst=tax*0.05,tot=tax+gst;
+  row.querySelector('.bTax').textContent='₹'+fmt(Math.round(tax));
+  row.querySelector('.bGst').textContent='₹'+fmt(Math.round(gst));
+  row.querySelector('.bTot').innerHTML='<b>₹'+fmt(Math.round(tot))+'</b>';
+  calcBTotals();
+}
+function calcBTotals(){
+  var sub=0,g=0;
+  document.querySelectorAll('.bTax').forEach(function(e){sub+=parseFloat(e.textContent.replace(/[₹,]/g,''))||0;});
+  document.querySelectorAll('.bGst').forEach(function(e){g+=parseFloat(e.textContent.replace(/[₹,]/g,''))||0;});
+  document.getElementById('billSubTotal').textContent='₹'+fmt(Math.round(sub));
+  document.getElementById('billGSTTotal').textContent='₹'+fmt(Math.round(g));
+  document.getElementById('billGrandTotal').textContent='₹'+fmt(Math.round(sub+g));
+}
+function generateInvoice(){
+  var total=parseFloat(document.getElementById('billGrandTotal').textContent.replace(/[₹,]/g,''))||0;
+  var gst=parseFloat(document.getElementById('billGSTTotal').textContent.replace(/[₹,]/g,''))||0;
+  var taxable=total-gst,cust=document.getElementById('invCust').value,mode=document.getElementById('invMode').value;
+  if(total<=0){showToast('Invoice mein amount 0 hai','error');return;}
+  var no='INV-2025-0'+S.nextInvNo++;
+  var inv={fbId:no,no:no,date:document.getElementById('invDate').value,customer:cust,amount:Math.round(taxable),gst:Math.round(gst),total:Math.round(total),status:'Pending',lockedBy:S.currentUser};
+  S.invoices.unshift(inv);
+  document.getElementById('invNo').value='INV-2025-0'+S.nextInvNo;
+  renderInvoiceHistory();
+  if(cust!=='Walk-in Customer'&&mode==='Credit'){var c=S.customers.find(function(c){return c.name===cust;});if(c){c.outstanding=Number(c.outstanding||0)+Math.round(total);fbSet('customers',cust,c);renderPendingReport();}}
+  fbSet('invoices',no,inv);
+  showToast('Invoice '+no+' generated! ₹'+fmt(Math.round(total)));
+}
+function renderInvoiceHistory(){
+  document.getElementById('invoiceHistoryTbl').innerHTML=S.invoices.map(function(inv){
+    return '<tr><td>'+inv.no+'</td><td>'+inv.date+'</td><td>'+inv.customer+'</td><td>₹'+fmt(inv.amount)+'</td><td>₹'+fmt(inv.gst)+'</td><td>₹'+fmt(inv.total)+'</td><td>'+(inv.status==='Paid'?'<span class="badge badge-success">Paid</span>':'<span class="badge badge-warning">Pending</span>')+'</td><td class="no-print">'+editBtn('','deleteInvoice("'+inv.fbId+'")')+'</td></tr>';
+  }).join('');
+}
+function deleteInvoice(fbId){ requireOwnerAuth(function(){if(confirm('Delete?')){S.invoices=S.invoices.filter(function(i){return i.fbId!==fbId;});renderInvoiceHistory();fbDel('invoices',fbId);showToast('Deleted!');}}, 'Owner PIN required.'); }
+
+// ============================================================
+// RATE CHANGE
+// ============================================================
+function renderRateChange(){
+  document.getElementById('rateChangeTbl').innerHTML=Object.keys(S.fuelRates).map(function(fuel){
+    var rate=S.fuelRates[fuel];
+    return '<tr><td><b>'+fuel+'</b></td><td>₹'+rate+'/L</td><td><input type="number" id="nr_'+fuel+'" value="'+rate+'" style="width:90px;padding:6px;border:1px solid var(--border);border-radius:6px;" oninput="calcRC(\''+fuel+'\','+rate+')"></td><td id="rcd_'+fuel+'" style="color:var(--text-muted);">No change</td></tr>';
+  }).join('');
+  renderRateHistory();
+}
+function calcRC(fuel,old){
+  var nv=parseFloat(document.getElementById('nr_'+fuel).value)||0,diff=(nv-old).toFixed(2);
+  var el=document.getElementById('rcd_'+fuel);
+  el.textContent=diff>0?'+₹'+diff:diff<0?'-₹'+Math.abs(diff):'No change';
+  el.style.color=diff>0?'var(--danger)':diff<0?'var(--success)':'var(--text-muted)';
+}
+function saveRateChange(){
+  requireOwnerAuth(function(){
+    Object.keys(S.fuelRates).forEach(function(fuel){
+      var nv=parseFloat(document.getElementById('nr_'+fuel).value);
+      if(nv&&nv!==S.fuelRates[fuel]){
+        var oldRate=S.fuelRates[fuel];
+        S.rateHistory.unshift({date:today(),fuel:fuel,old:oldRate,newR:nv,by:'Owner'});
+        S.fuelRates[fuel]=nv;
+        fbSet('fuelRates',fuel,{fuel:fuel,rate:nv});
+        fbSet('rateHistory',uid(),{date:today(),fuel:fuel,old:oldRate,newR:nv,by:'Owner'});
+      }
+    });
+    renderRateChange(); renderDashboard(); showToast('Rate change saved!');
+  },'Rate change ke liye Owner PIN required.');
+}
+function renderRateHistory(){
+  document.getElementById('rateHistoryTbl').innerHTML=S.rateHistory.map(function(r){
+    return '<tr><td>'+r.date+'</td><td>'+r.fuel+'</td><td>₹'+r.old+'</td><td>₹'+r.newR+'</td><td style="color:'+(r.newR>r.old?'var(--danger)':'var(--success)')+';">'+(r.newR>r.old?'+':'')+'₹'+(r.newR-r.old).toFixed(2)+'</td><td>'+r.by+'</td></tr>';
+  }).join('');
+}
+
+// ============================================================
+// CREDIT COLLECTION
+// ============================================================
+function renderCreditCollection(){
+  document.getElementById('recNo').value='REC-0'+S.nextRecNo;
+  var sel=document.getElementById('recCust');
+  sel.innerHTML='<option>-- Select --</option>'+S.customers.filter(function(c){return c.outstanding>0;}).map(function(c){return '<option>'+c.name+'</option>';}).join('');
+  renderCollectionTable();
+}
+function loadCustBalance(){
+  var name=document.getElementById('recCust').value;
+  var c=S.customers.find(function(c){return c.name===name;});
+  if(c&&c.outstanding>0){document.getElementById('custBalanceBox').style.display='block';document.getElementById('custOutstanding').textContent='₹'+fmt(c.outstanding);document.getElementById('custDays').textContent=c.days+'d';document.getElementById('recAmt').value=c.outstanding;}
+  else document.getElementById('custBalanceBox').style.display='none';
+}
+function saveCollection(){
+  var cust=document.getElementById('recCust').value,amt=parseFloat(document.getElementById('recAmt').value);
+  if(!cust||cust==='-- Select --'){showToast('Customer select karein','error');return;}
+  if(!amt||amt<=0){showToast('Valid amount enter karein','error');return;}
+  var c=S.customers.find(function(c){return c.name===cust;});
+  if(!c){showToast('Customer nahi mila','error');return;}
+  if(amt>c.outstanding){showToast('Amount outstanding se zyada hai! Max: ₹'+fmt(c.outstanding),'error');return;}
+  var recNo='REC-0'+S.nextRecNo++;
+  var fbId=uid();
+  var entry={fbId:fbId,recNo:recNo,date:document.getElementById('recDate').value,customer:cust,amount:amt,mode:document.getElementById('recMode').value,ref:document.getElementById('recRef').value||'-',lockedBy:S.currentUser};
+  c.outstanding=parseFloat((c.outstanding-amt).toFixed(2));
+  if(c.outstanding<=0)c.days=0;
+  S.collections.unshift(entry);
+  document.getElementById('recNo').value='REC-0'+S.nextRecNo;
+  document.getElementById('recAmt').value=''; document.getElementById('recRef').value='';
+  document.getElementById('custBalanceBox').style.display='none';
+  renderCollectionTable(); renderCreditCollection(); renderPendingReport(); renderDashboard();
+  fbSet('collections',fbId,entry); fbSet('customers',cust,c);
+  showToast('₹'+fmt(amt)+' collected from '+cust+'! Receipt: '+recNo);
+}
+function renderCollectionTable(){
+  document.getElementById('collectionRegTbl').innerHTML=S.collections.map(function(c,i){
+    return '<tr><td>'+(i+1)+'</td><td>'+c.date+'</td><td>'+c.customer+'</td><td>₹'+fmt(c.amount)+'</td><td>'+c.mode+'</td><td>'+c.ref+'</td><td class="no-print">'+editBtn('','deleteCollection("'+c.fbId+'")')+'</td></tr>';
+  }).join('');
+}
+function deleteCollection(fbId){ requireOwnerAuth(function(){if(confirm('Delete?')){S.collections=S.collections.filter(function(c){return c.fbId!==fbId;});renderCollectionTable();fbDel('collections',fbId);showToast('Deleted!');}}, 'Owner PIN required.'); }
+
+// ============================================================
+// JOURNAL
+// ============================================================
+function renderJournal(){ addJVRow(); renderJVTable(); renderCashBook(); renderBankBook(); document.getElementById('jvNo').value='JV-0'+S.nextJvNo; }
+function addJVRow(){
+  var tr=document.createElement('tr');
+  tr.innerHTML='<td><select style="padding:5px;border:1px solid var(--border);border-radius:5px;"><option>Cash A/c</option><option>Sales A/c</option><option>Purchase A/c</option><option>Bank A/c</option><option>Expense A/c</option></select></td><td><select style="padding:5px;border:1px solid var(--border);border-radius:5px;"><option>Dr</option><option>Cr</option></select></td><td><input type="number" placeholder="0.00" style="width:110px;padding:5px;border:1px solid var(--border);border-radius:5px;"></td><td class="no-print"><button class="btn btn-sm btn-danger" onclick="this.closest(\'tr\').remove()">✕</button></td>';
+  document.getElementById('jvRows').appendChild(tr);
+}
+function saveJV(){
+  var narr=document.getElementById('jvNarr').value;
+  if(!narr){showToast('Narration bharein','error');return;}
+  var no='JV-0'+S.nextJvNo++;
+  var entry={fbId:no,no:no,date:document.getElementById('jvDate').value,narr:narr,dr:'₹0',cr:'₹0',lockedBy:S.currentUser};
+  S.jvEntries.push(entry);
+  document.getElementById('jvNo').value='JV-0'+S.nextJvNo;
+  document.getElementById('jvNarr').value='';
+  renderJVTable(); fbSet('journals',no,entry); showToast('Journal posted: '+no);
+}
+function renderJVTable(){
+  document.getElementById('jvRegTbl').innerHTML=S.jvEntries.map(function(j){
+    return '<tr><td>'+j.no+'</td><td>'+j.date+'</td><td>'+j.narr+'</td><td>'+j.dr+'</td><td>'+j.cr+'</td><td class="no-print">'+editBtn('','deleteJV("'+j.fbId+'")')+'</td></tr>';
+  }).join('');
+}
+function deleteJV(fbId){ requireOwnerAuth(function(){if(confirm('Delete?')){S.jvEntries=S.jvEntries.filter(function(j){return j.fbId!==fbId;});renderJVTable();fbDel('journals',fbId);showToast('Deleted!');}}, 'Owner PIN required.'); }
+function renderCashBook(){
+  var bal=0;
+  document.getElementById('cashBookTbl').innerHTML=S.cashBook.map(function(r){bal=r.bal;return '<tr '+(r.part.includes('Balance')?'class="highlight-row"':'')+'><td>'+r.date+'</td><td>'+r.part+'</td><td>'+r.voucher+'</td><td>'+(r.dr>0?'₹'+fmt(r.dr):'-')+'</td><td>'+(r.cr>0?'₹'+fmt(r.cr):'-')+'</td><td style="color:var(--success);">₹'+fmt(r.bal)+'</td></tr>';}).join('');
+  document.getElementById('cashBookBalance').textContent='Balance: ₹'+fmt(bal);
+}
+function renderBankBook(){
+  var bal=0;
+  document.getElementById('bankBookTbl').innerHTML=S.bankBook.map(function(r){bal=r.bal;return '<tr '+(r.part.includes('Balance')?'class="highlight-row"':'')+'><td>'+r.date+'</td><td>'+r.part+'</td><td>'+r.ref+'</td><td>'+(r.credit>0?'₹'+fmt(r.credit):'-')+'</td><td>'+(r.debit>0?'₹'+fmt(r.debit):'-')+'</td><td style="color:var(--success);">₹'+fmt(r.bal)+'</td></tr>';}).join('');
+  document.getElementById('bankBookBalance').textContent='Balance: ₹'+fmt(bal);
+}
+
+// ============================================================
+// SALARY
+// ============================================================
+var SAL_DEF={'Ramesh Kumar':{b:12000,a:2000,d:500},'Suresh Yadav':{b:12000,a:2000,d:500},'Mohan Singh':{b:20000,a:5000,d:1000}};
+function loadSalaryDefaults(){ var s=document.getElementById('salStaff').value,d=SAL_DEF[s]; if(d){document.getElementById('salBasic').value=d.b;document.getElementById('salAllow').value=d.a;document.getElementById('salDeduct').value=d.d;calcSalary();} }
+function calcSalary(){ var b=parseFloat(document.getElementById('salBasic').value)||0,a=parseFloat(document.getElementById('salAllow').value)||0,d=parseFloat(document.getElementById('salDeduct').value)||0; document.getElementById('salNet').value=b+a-d; }
+function renderSalary(){ renderSalaryTable(); calcSalary(); }
+function renderSalaryTable(){
+  var total=S.salaries.reduce(function(s,e){return s+Number(e.net||0);},0);
+  document.getElementById('salTotal').textContent='Total: ₹'+fmt(total);
+  document.getElementById('salaryRegTbl').innerHTML=S.salaries.map(function(s){
+    return '<tr><td>'+s.month+'</td><td>'+s.staff+'</td><td>₹'+fmt(s.basic)+'</td><td>₹'+fmt(s.allow)+'</td><td>₹'+fmt(s.deduct)+'</td><td><b>₹'+fmt(s.net)+'</b></td><td>'+s.mode+'</td><td><span class="badge badge-success">Paid</span></td><td class="no-print">'+editBtn('','deleteSalary("'+s.fbId+'")')+'</td></tr>';
+  }).join('');
+}
+function saveSalary(){
+  var staff=document.getElementById('salStaff').value,month=document.getElementById('salMonth').value;
+  var net=parseFloat(document.getElementById('salNet').value);
+  var fbId=staff+'_'+month.replace(/\s/g,'_');
+  var entry={fbId:fbId,month:month,staff:staff,basic:parseFloat(document.getElementById('salBasic').value),allow:parseFloat(document.getElementById('salAllow').value),deduct:parseFloat(document.getElementById('salDeduct').value),net:net,mode:document.getElementById('salMode').value,lockedBy:S.currentUser};
+  var idx=S.salaries.findIndex(function(s){return s.fbId===fbId;});
+  if(idx>=0)S.salaries[idx]=entry; else S.salaries.push(entry);
+  renderSalaryTable(); fbSet('salaries',fbId,entry); showToast(staff+' salary ₹'+fmt(net)+' saved!');
+}
+function deleteSalary(fbId){ requireOwnerAuth(function(){if(confirm('Delete?')){S.salaries=S.salaries.filter(function(s){return s.fbId!==fbId;});renderSalaryTable();fbDel('salaries',fbId);showToast('Deleted!');}}, 'Owner PIN required.'); }
+
+// ============================================================
+// DIP STOCK
+// ============================================================
+function renderDipStock(){
+  document.getElementById('dipTankTbl').innerHTML=S.tanks.map(function(t,i){
+    return '<tr><td><b>'+t.name+'</b></td><td>'+t.fuel+'</td><td>'+t.cap.toLocaleString()+'L</td><td><input type="number" value="'+t.dip+'" style="width:65px;padding:5px;border:1px solid var(--border);border-radius:5px;" oninput="calcDip('+i+',this.value)"></td><td id="dipCalc'+i+'">'+t.stock.toLocaleString()+'</td><td style="color:var(--info);">'+t.stock.toLocaleString()+'</td><td id="dipDiff'+i+'">0</td></tr>';
+  }).join('');
+  document.getElementById('dipHistoryTbl').innerHTML=S.dipHistory.map(function(d){
+    return '<tr><td>'+d.date+'</td><td>'+d.tank+'</td><td>'+d.dipStock+'L</td><td>'+d.bookStock+'L</td><td style="color:'+(String(d.diff).startsWith('+')?'var(--success)':'var(--danger)')+';">'+d.diff+'</td></tr>';
+  }).join('');
+  renderFuelPurchaseTable();
+}
+function calcDip(idx,val){
+  var stock=Math.round(parseFloat(val)||0)*50;
+  document.getElementById('dipCalc'+idx).textContent=stock.toLocaleString();
+  var diff=stock-S.tanks[idx].stock;
+  var el=document.getElementById('dipDiff'+idx);
+  el.textContent=diff>=0?'+'+diff:diff; el.style.color=diff<0?'var(--danger)':diff>0?'var(--success)':'var(--text-muted)';
+}
+function saveDipEntry(){
+  var fbId=uid();
+  var entry={fbId:fbId,date:document.getElementById('dipDate').value,time:document.getElementById('dipTime').value,tank:'All Tanks',dipStock:S.tanks[0].stock,bookStock:S.tanks[0].stock,diff:'0L',lockedBy:S.currentUser};
+  S.dipHistory.unshift(entry);
+  S.tanks.forEach(function(t){fbSet('tanks',t.name,t);});
+  fbSet('dipHistory',fbId,entry);
+  renderDipStock(); showToast('Dip entry saved!');
+}
+
+// ============================================================
+// FUEL PURCHASE
+// ============================================================
+if(!S.fuelPurchases) S.fuelPurchases = [];
+
+function calcFuelPurchase(){
+  var qty   = parseFloat(document.getElementById('fpQty').value)   || 0;
+  var total = parseFloat(document.getElementById('fpTotal').value) || 0;
+  var sale  = parseFloat(document.getElementById('fpSalePrice').value);
+
+  // Auto-fill sale price from current rates if empty
+  if(!sale){
+    var fuel = document.getElementById('fpFuel').value;
+    sale = S.fuelRates[fuel] || 0;
+    document.getElementById('fpSalePrice').value = sale;
+  }
+
+  var costPerL   = qty > 0 ? parseFloat((total / qty).toFixed(4)) : 0;
+  var marginPerL = sale > 0 ? parseFloat((sale - costPerL).toFixed(4)) : 0;
+  var totalProfit = qty > 0 ? parseFloat((marginPerL * qty).toFixed(2)) : 0;
+
+  document.getElementById('fpCostPrice').value   = costPerL   > 0 ? costPerL   : '';
+  document.getElementById('fpMargin').value      = marginPerL ? marginPerL : '';
+  document.getElementById('fpTotalProfit').value = totalProfit ? totalProfit : '';
+
+  // Color margin
+  var mEl = document.getElementById('fpMargin');
+  var pEl = document.getElementById('fpTotalProfit');
+  mEl.style.color = marginPerL >= 0 ? 'var(--success)' : 'var(--danger)';
+  pEl.style.color = totalProfit >= 0 ? 'var(--success)' : 'var(--danger)';
+
+  // Summary line
+  var txt = '';
+  if(qty > 0 && total > 0){
+    txt = qty.toLocaleString('en-IN') + 'L × ₹' + costPerL + '/L (cost) | Sale ₹' + sale + '/L | Margin ₹' + marginPerL + '/L | Est. Profit ₹' + fmt(totalProfit);
+  } else {
+    txt = 'Quantity aur Amount bharein...';
+  }
+  document.getElementById('fpSummaryText').textContent = txt;
+}
+
+function saveFuelPurchase(){
+  requireOwnerAuth(function(){
+    var qty   = parseFloat(document.getElementById('fpQty').value);
+    var total = parseFloat(document.getElementById('fpTotal').value);
+    if(!qty || qty <= 0){ showToast('Valid quantity bharein','error'); return; }
+    if(!total || total <= 0){ showToast('Valid amount bharein','error'); return; }
+    var fuel       = document.getElementById('fpFuel').value;
+    var costPerL   = parseFloat((total / qty).toFixed(4));
+    var sale       = parseFloat(document.getElementById('fpSalePrice').value) || S.fuelRates[fuel];
+    var marginPerL = parseFloat((sale - costPerL).toFixed(4));
+    var totalProfit= parseFloat((marginPerL * qty).toFixed(2));
+    var fbId = uid();
+    var entry = {
+      fbId: fbId,
+      date: document.getElementById('fpDate').value || today(),
+      fuel: fuel, qty: qty, totalAmt: total,
+      costPerL: costPerL, salePerL: sale,
+      marginPerL: marginPerL, totalProfit: totalProfit,
+      supplier: document.getElementById('fpSupplier').value || '-',
+      invNo: document.getElementById('fpInvNo').value || '-',
+      payMode: document.getElementById('fpPayMode').value,
+      lockedBy: S.currentUser
+    };
+    if(!S.fuelPurchases) S.fuelPurchases = [];
+    S.fuelPurchases.unshift(entry);
+    // Add stock to matching tank
+    var tank = S.tanks.find(function(t){ return t.fuel === fuel; });
+    if(tank){ tank.stock = Math.min(tank.cap, tank.stock + qty); fbSet('tanks', tank.name, tank); }
+    fbSet('fuelPurchases', fbId, entry);
+    renderFuelPurchaseTable(); renderDashboard();
+    resetFuelPurchaseForm();
+    showToast(qty.toLocaleString()+'L '+fuel+' purchase saved! Profit: ₹'+fmt(totalProfit));
+  }, 'Fuel purchase ke liye Owner PIN required.');
+}
+
+function renderFuelPurchaseTable(){
+  if(!S.fuelPurchases) S.fuelPurchases = [];
+  document.getElementById('fuelPurchaseTbl').innerHTML = S.fuelPurchases.map(function(p){
+    return '<tr>' +
+      '<td>'+p.date+'</td>' +
+      '<td>'+p.fuel+'</td>' +
+      '<td>'+Number(p.qty).toLocaleString('en-IN')+'</td>' +
+      '<td>₹'+fmt(p.totalAmt)+'</td>' +
+      '<td style="color:var(--info);font-weight:700;">₹'+p.costPerL+'</td>' +
+      '<td>₹'+p.salePerL+'</td>' +
+      '<td style="color:'+(p.marginPerL>=0?'var(--success)':'var(--danger)')+';">₹'+p.marginPerL+'</td>' +
+      '<td style="color:'+(p.totalProfit>=0?'var(--success)':'var(--danger)')+';font-weight:700;">₹'+fmt(p.totalProfit)+'</td>' +
+      '<td>'+p.supplier+'</td>' +
+      '<td>'+p.payMode+'</td>' +
+      '<td class="no-print">'+editBtn('', 'deleteFuelPurchase("'+p.fbId+'")')+'</td>' +
+    '</tr>';
+  }).join('');
+}
+
+function deleteFuelPurchase(fbId){
+  requireOwnerAuth(function(){
+    if(confirm('Delete?')){
+      S.fuelPurchases = S.fuelPurchases.filter(function(p){ return p.fbId !== fbId; });
+      renderFuelPurchaseTable();
+      fbDel('fuelPurchases', fbId);
+      showToast('Purchase deleted!');
+    }
+  }, 'Owner PIN required.');
+}
+
+function resetFuelPurchaseForm(){
+  ['fpQty','fpTotal','fpCostPrice','fpSalePrice','fpMargin','fpTotalProfit','fpSupplier','fpInvNo'].forEach(function(id){
+    var el = document.getElementById(id); if(el) el.value = '';
+  });
+  document.getElementById('fpSummaryText').textContent = 'Quantity aur Amount bharein...';
+}
+
+// ============================================================
+// SHORT/EXCESS
+// ============================================================
+function renderSETable(){
+  document.getElementById('seRegTbl').innerHTML=S.seEntries.map(function(s,i){
+    return '<tr><td>'+(i+1)+'</td><td>'+s.date+'</td><td>'+s.shift+'</td><td>'+s.type+'</td><td>'+s.amount+'</td><td>'+s.staff+'</td><td>'+s.reason+'</td><td class="no-print">'+editBtn('','deleteSE("'+s.fbId+'")')+'</td></tr>';
+  }).join('');
+}
+function saveSE(){
+  var amt=parseFloat(document.getElementById('seAmt').value);
+  if(!amt){showToast('Amount enter karein','error');return;}
+  var fbId=uid();
+  var entry={fbId:fbId,date:document.getElementById('seDate').value,shift:document.getElementById('seShift').value,type:document.getElementById('seType').value,amount:amt,staff:document.getElementById('seStaff').value,reason:document.getElementById('seReason').value,recovery:document.getElementById('seRecovery').value,lockedBy:S.currentUser};
+  S.seEntries.push(entry); renderSETable();
+  document.getElementById('seAmt').value=''; document.getElementById('seReason').value='';
+  fbSet('shortExcess',fbId,entry); showToast('Short/Excess entry saved!');
+}
+function deleteSE(fbId){ requireOwnerAuth(function(){if(confirm('Delete?')){S.seEntries=S.seEntries.filter(function(e){return e.fbId!==fbId;});renderSETable();fbDel('shortExcess',fbId);showToast('Deleted!');}}, 'Owner PIN required.'); }
+
+// ============================================================
+// DAY BOOK
+// ============================================================
+function renderDayBook(){
+  var totalSale=S.sales.reduce(function(s,e){return s+Number(e.amount||0);},0);
+  var cashSale=S.sales.filter(function(e){return e.mode==='Cash';}).reduce(function(s,e){return s+Number(e.amount||0);},0);
+  var cardSale=S.sales.filter(function(e){return e.mode==='Card/UPI';}).reduce(function(s,e){return s+Number(e.amount||0);},0);
+  var creditSale=S.sales.filter(function(e){return e.mode==='Credit';}).reduce(function(s,e){return s+Number(e.amount||0);},0);
+  var totalExp=S.expenses.reduce(function(s,e){return s+Number(e.amount||0);},0);
+  var totalColl=S.collections.reduce(function(s,c){return s+Number(c.amount||0);},0);
+  var totalSal=S.salaries.reduce(function(s,e){return s+Number(e.net||0);},0);
+  document.getElementById('dayBookContent').innerHTML=
+    '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px;">'+
+    '<div style="background:rgba(230,92,0,0.06);border:1px solid rgba(230,92,0,0.2);border-radius:8px;padding:12px;text-align:center;"><div style="font-size:10px;color:var(--text-muted);">TOTAL SALE</div><div style="font-size:17px;font-weight:800;color:var(--primary);">₹'+fmt(totalSale)+'</div></div>'+
+    '<div style="background:rgba(46,194,126,0.06);border:1px solid rgba(46,194,126,0.2);border-radius:8px;padding:12px;text-align:center;"><div style="font-size:10px;color:var(--text-muted);">CASH SALE</div><div style="font-size:17px;font-weight:800;color:var(--success);">₹'+fmt(cashSale)+'</div></div>'+
+    '<div style="background:rgba(52,152,219,0.06);border:1px solid rgba(52,152,219,0.2);border-radius:8px;padding:12px;text-align:center;"><div style="font-size:10px;color:var(--text-muted);">COLLECTIONS</div><div style="font-size:17px;font-weight:800;color:var(--info);">₹'+fmt(totalColl)+'</div></div>'+
+    '<div style="background:rgba(231,76,60,0.06);border:1px solid rgba(231,76,60,0.2);border-radius:8px;padding:12px;text-align:center;"><div style="font-size:10px;color:var(--text-muted);">EXPENSES</div><div style="font-size:17px;font-weight:800;color:var(--danger);">₹'+fmt(totalExp)+'</div></div></div>'+
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">'+
+    '<div><div style="font-weight:700;font-size:12px;margin-bottom:8px;color:var(--success);">RECEIPTS</div><table><tbody>'+
+    '<tr><td>Cash Sales</td><td style="text-align:right;">₹'+fmt(cashSale)+'</td></tr>'+
+    '<tr><td>Card/UPI Sales</td><td style="text-align:right;">₹'+fmt(cardSale)+'</td></tr>'+
+    '<tr><td>Credit Sales</td><td style="text-align:right;">₹'+fmt(creditSale)+'</td></tr>'+
+    '<tr><td>Collections</td><td style="text-align:right;">₹'+fmt(totalColl)+'</td></tr>'+
+    '<tr style="background:var(--bg);font-weight:800;"><td>TOTAL</td><td style="text-align:right;color:var(--success);">₹'+fmt(totalSale+totalColl)+'</td></tr></tbody></table></div>'+
+    '<div><div style="font-weight:700;font-size:12px;margin-bottom:8px;color:var(--danger);">PAYMENTS</div><table><tbody>'+
+    '<tr><td>Cash Expenses</td><td style="text-align:right;">₹'+fmt(totalExp)+'</td></tr>'+
+    '<tr><td>Salary Paid</td><td style="text-align:right;">₹'+fmt(totalSal)+'</td></tr>'+
+    '<tr style="background:var(--bg);font-weight:800;"><td>TOTAL</td><td style="text-align:right;color:var(--danger);">₹'+fmt(totalExp+totalSal)+'</td></tr></tbody></table></div></div>';
+}
+
+// ============================================================
+// SALES REPORT
+// ============================================================
+function renderSalesReport(){
+  var totalSale=S.sales.reduce(function(s,e){return s+Number(e.amount||0);},0);
+  var petrolQty=S.sales.filter(function(s){return s.fuel==='Petrol';}).reduce(function(s,e){return s+Number(e.qty||0);},0);
+  var dieselQty=S.sales.filter(function(s){return s.fuel==='Diesel';}).reduce(function(s,e){return s+Number(e.qty||0);},0);
+  document.getElementById('salesReportContent').innerHTML=
+    '<div class="stat-grid" style="margin-bottom:14px;">'+
+    '<div class="stat-card"><div class="stat-icon orange"><i class="fas fa-gas-pump"></i></div><div class="stat-value">'+petrolQty+'L</div><div class="stat-label">Petrol Sold</div></div>'+
+    '<div class="stat-card"><div class="stat-icon green"><i class="fas fa-oil-can"></i></div><div class="stat-value">'+dieselQty+'L</div><div class="stat-label">Diesel Sold</div></div>'+
+    '<div class="stat-card"><div class="stat-icon blue"><i class="fas fa-rupee-sign"></i></div><div class="stat-value">₹'+fmt(totalSale)+'</div><div class="stat-label">Total Revenue</div></div>'+
+    '<div class="stat-card"><div class="stat-icon yellow"><i class="fas fa-chart-pie"></i></div><div class="stat-value">₹'+fmt(Math.round(totalSale*0.099))+'</div><div class="stat-label">Est. Profit</div></div></div>'+
+    '<div class="table-wrap"><table><thead><tr><th>Date</th><th>Time</th><th>Fuel</th><th>Qty(L)</th><th>Rate</th><th>Amount</th><th>Mode</th><th>Customer</th></tr></thead><tbody>'+
+    S.sales.map(function(s){return '<tr><td>'+(s.date||'')+'</td><td>'+(s.time||'')+'</td><td>'+s.fuel+'</td><td>'+s.qty+'</td><td>₹'+s.rate+'</td><td>₹'+fmt(s.amount)+'</td><td>'+modeBadge(s.mode)+'</td><td>'+(s.customer||'-')+'</td></tr>';}).join('')+
+    '</tbody></table></div>';
+}
+
+// ============================================================
+// STOCK REPORTS
+// ============================================================
+function renderStockReports(){
+  document.getElementById('stockSumTbl').innerHTML=S.tanks.map(function(t){
+    var sold=S.sales.filter(function(s){return s.fuel===t.fuel;}).reduce(function(s,e){return s+Number(e.qty||0);},0);
+    return '<tr><td><b>'+t.name+' ('+t.fuel+')</b></td><td>'+(t.stock+sold).toLocaleString()+'L</td><td>0L</td><td>'+sold+'L</td><td><b>'+t.stock.toLocaleString()+'L</b></td><td>₹'+fmt(Math.round(t.stock*S.fuelRates[t.fuel]))+'</td></tr>';
+  }).join('');
+  var totalVal=S.tanks.reduce(function(s,t){return s+(t.stock*S.fuelRates[t.fuel]);},0);
+  document.getElementById('closingStockContent').innerHTML=
+    '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:12px;">'+
+    S.tanks.map(function(t){var pct=Math.round(t.stock/t.cap*100);return '<div style="border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center;"><div style="font-size:12px;font-weight:700;margin-bottom:6px;">'+t.name+'</div><div style="font-size:20px;font-weight:800;color:var(--primary);">'+t.stock.toLocaleString()+'L</div><div style="font-size:13px;font-weight:700;">₹'+fmt(Math.round(t.stock*S.fuelRates[t.fuel]))+'</div>'+(pct<35?'<div style="font-size:10px;color:var(--danger);">⚠ Low Stock</div>':'')+'</div>';}).join('')+
+    '</div><div style="background:var(--bg);border-radius:8px;padding:12px;text-align:center;">Total: <b style="font-size:17px;color:var(--primary);">₹'+fmt(Math.round(totalVal))+'</b></div>';
+}
+
+// ============================================================
+// PENDING REPORT
+// ============================================================
+function renderPendingReport(){
+  var pending=S.customers.filter(function(c){return c.outstanding>0;});
+  document.getElementById('pendingReportTbl').innerHTML=pending.map(function(c){
+    var collected=S.collections.filter(function(col){return col.customer===c.name;}).reduce(function(s,e){return s+Number(e.amount||0);},0);
+    return '<tr><td><b>'+c.name+'</b></td><td>₹'+fmt(Number(c.outstanding||0)+collected)+'</td><td>₹'+fmt(collected)+'</td><td style="color:var(--danger);font-weight:700;">₹'+fmt(c.outstanding)+'</td><td>'+dayBadge(c.days||0)+'</td><td class="no-print"><button class="btn btn-sm btn-success" onclick="showPage(\'creditCollection\')">Collect</button></td></tr>';
+  }).join('');
+  var tot=pending.reduce(function(s,c){return s+Number(c.outstanding||0);},0);
+  document.getElementById('pendingReportFoot').innerHTML='<tr style="background:var(--bg);font-weight:800;"><td colspan="3">TOTAL PENDING</td><td style="color:var(--danger);">₹'+fmt(tot)+'</td><td></td><td></td></tr>';
+  document.getElementById('pendingBadge').textContent=pending.length;
+}
+
+// ============================================================
+// FINANCIAL REPORTS
+// ============================================================
+function renderFinancialReports(){
+  var totalSale=S.sales.reduce(function(s,e){return s+Number(e.amount||0);},0);
+  var totalExp=S.expenses.reduce(function(s,e){return s+Number(e.amount||0);},0);
+  var totalSal=S.salaries.reduce(function(s,e){return s+Number(e.net||0);},0);
+  var purchase=188000,profit=totalSale-purchase-totalExp-totalSal;
+  document.getElementById('pnlContent').innerHTML=
+    '<div><div style="font-weight:700;color:var(--danger);margin-bottom:8px;padding-bottom:6px;border-bottom:2px solid var(--danger);">EXPENDITURE</div><table><tbody>'+
+    '<tr><td>Fuel Purchase</td><td style="text-align:right;">₹'+fmt(purchase)+'</td></tr>'+
+    '<tr><td>Salaries</td><td style="text-align:right;">₹'+fmt(totalSal)+'</td></tr>'+
+    '<tr><td>Expenses</td><td style="text-align:right;">₹'+fmt(totalExp)+'</td></tr>'+
+    '<tr style="font-weight:800;background:rgba(46,194,126,0.07);"><td>Net Profit</td><td style="text-align:right;color:var(--success);">₹'+fmt(Math.max(0,profit))+'</td></tr></tbody></table></div>'+
+    '<div><div style="font-weight:700;color:var(--success);margin-bottom:8px;padding-bottom:6px;border-bottom:2px solid var(--success);">INCOME</div><table><tbody>'+
+    '<tr><td>Fuel Sales</td><td style="text-align:right;">₹'+fmt(totalSale)+'</td></tr>'+
+    '<tr style="font-weight:800;background:var(--bg);"><td>TOTAL</td><td style="text-align:right;">₹'+fmt(totalSale)+'</td></tr></tbody></table></div>';
+  document.getElementById('balSheetContent').innerHTML=
+    '<div><div style="font-weight:700;color:var(--primary);margin-bottom:8px;">LIABILITIES</div><table><tbody>'+
+    '<tr><td>Capital</td><td style="text-align:right;">₹18,00,000</td></tr>'+
+    '<tr><td>Net Profit</td><td style="text-align:right;">₹'+fmt(Math.max(0,profit))+'</td></tr>'+
+    '<tr><td>Supplier Payable</td><td style="text-align:right;">₹25,000</td></tr></tbody></table></div>'+
+    '<div><div style="font-weight:700;color:var(--info);margin-bottom:8px;">ASSETS</div><table><tbody>'+
+    '<tr><td>Equipment & Building</td><td style="text-align:right;">₹13,00,000</td></tr>'+
+    '<tr><td>Cash Sales</td><td style="text-align:right;">₹'+fmt(S.sales.filter(function(s){return s.mode==='Cash';}).reduce(function(s,e){return s+Number(e.amount||0);},0))+'</td></tr>'+
+    '<tr><td>Bank Balance</td><td style="text-align:right;">₹2,84,140</td></tr>'+
+    '<tr><td>Stock Value</td><td style="text-align:right;">₹'+fmt(Math.round(S.tanks.reduce(function(s,t){return s+(t.stock*S.fuelRates[t.fuel]);},0)))+'</td></tr>'+
+    '<tr><td>Receivables</td><td style="text-align:right;">₹'+fmt(S.customers.reduce(function(s,c){return s+Number(c.outstanding||0);},0))+'</td></tr></tbody></table></div>';
+}
+
+// ============================================================
+// GST
+// ============================================================
+function renderGST(){
+  document.getElementById('gstr1Tbl').innerHTML=S.invoices.map(function(inv){
+    return '<tr><td>'+inv.no+'</td><td>'+inv.date+'</td><td>'+inv.customer+'</td><td>₹'+fmt(inv.amount)+'</td><td>₹'+fmt(Math.round(inv.gst/2))+'</td><td>₹'+fmt(Math.round(inv.gst/2))+'</td><td>₹'+fmt(inv.total)+'</td></tr>';
+  }).join('');
+  var gstP=S.invoices.reduce(function(s,e){return s+Number(e.gst||0);},0);
+  document.getElementById('gstr3bContent').innerHTML=
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;">'+
+    '<div><div style="font-weight:700;color:var(--primary);margin-bottom:8px;">OUTWARD (Sales)</div><table><tbody>'+
+    '<tr><td>Taxable Sales</td><td style="text-align:right;">₹'+fmt(S.invoices.reduce(function(s,e){return s+Number(e.amount||0);},0))+'</td></tr>'+
+    '<tr><td>Total GST</td><td style="text-align:right;color:var(--danger);">₹'+fmt(gstP)+'</td></tr></tbody></table></div>'+
+    '<div><div style="font-weight:700;color:var(--success);margin-bottom:8px;">NET GST</div><table><tbody>'+
+    '<tr><td>ITC Available</td><td style="text-align:right;color:var(--success);">₹91,500</td></tr>'+
+    '<tr style="font-weight:800;"><td>Net Payable</td><td style="text-align:right;color:var(--danger);">₹'+fmt(Math.max(0,gstP-91500))+'</td></tr></tbody></table></div></div>';
+}
+
+// ============================================================
+// MASTERS
+// ============================================================
+function renderMasters(){ renderCustomerTable(); }
+function renderCustomerTable(){
+  document.getElementById('custMasterTbl').innerHTML=S.customers.map(function(c,i){
+    return '<tr><td>'+(i+1)+'</td><td><b>'+c.name+'</b></td><td>'+(c.phone||'-')+'</td><td>'+(c.gstin||'-')+'</td><td>₹'+fmt(c.limit||0)+'</td><td style="color:'+(c.outstanding>0?'var(--danger)':'var(--success)')+';">₹'+fmt(c.outstanding||0)+'</td><td class="no-print">'+editBtn('editCustomer('+i+')','deleteCustomer('+i+')')+'</td></tr>';
+  }).join('');
+}
+function addCustomer(){
+  var name=document.getElementById('custName').value.trim();
+  if(!name){showToast('Name enter karein','error');return;}
+  if(S.customers.find(function(c){return c.name===name;})){showToast('Customer already exist karta hai!','error');return;}
+  var c={name:name,phone:document.getElementById('custPhone').value,gstin:document.getElementById('custGST').value||'-',limit:parseFloat(document.getElementById('custLimit').value)||0,outstanding:0,days:0};
+  S.customers.push(c); renderCustomerTable(); renderCreditCollection();
+  ['custName','custPhone','custGST','custLimit'].forEach(function(id){document.getElementById(id).value='';});
+  fbSet('customers',name,c); showToast('Customer '+name+' added!');
+}
+function editCustomer(idx){
+  requireOwnerAuth(function(){
+    var c=S.customers[idx];
+    document.getElementById('modalTitle').textContent='Edit Customer';
+    document.getElementById('modalBody').innerHTML='<div class="form-row"><div class="form-field"><label>Name</label><input type="text" id="ec_name" value="'+c.name+'"></div><div class="form-field"><label>Phone</label><input type="text" id="ec_phone" value="'+(c.phone||'')+'"></div></div><div class="form-row"><div class="form-field"><label>GSTIN</label><input type="text" id="ec_gstin" value="'+(c.gstin||'')+'"></div><div class="form-field"><label>Credit Limit</label><input type="number" id="ec_limit" value="'+(c.limit||0)+'"></div></div><div class="btn-group" style="margin-top:12px;"><button class="btn btn-primary" onclick="updateCustomer('+idx+')"><i class="fas fa-save"></i> Update</button><button class="btn btn-outline" onclick="closeModal()">Cancel</button></div>';
+    document.getElementById('modalOverlay').style.display='flex';
+  },'Customer edit ke liye Owner PIN required.');
+}
+function updateCustomer(idx){
+  var c=S.customers[idx],oldName=c.name;
+  c.name=document.getElementById('ec_name').value; c.phone=document.getElementById('ec_phone').value;
+  c.gstin=document.getElementById('ec_gstin').value; c.limit=parseFloat(document.getElementById('ec_limit').value)||0;
+  closeModal(); renderCustomerTable(); renderCreditCollection();
+  fbSet('customers',oldName,c); showToast('Customer updated!');
+}
+function deleteCustomer(idx){
+  requireOwnerAuth(function(){
+    if(S.customers[idx].outstanding>0){showToast('Outstanding pending hai! Delete nahi hoga.','error');return;}
+    if(confirm('Delete?')){var name=S.customers[idx].name;S.customers.splice(idx,1);renderCustomerTable();fbDel('customers',name);showToast('Customer deleted!');}
+  },'Owner PIN required.');
+}
+
+// ============================================================
+// MISC
+// ============================================================
+function updateCurrentDate(){ var el=document.getElementById('currentDate'); if(el) el.textContent=new Date().toLocaleDateString('en-IN',{weekday:'short',day:'2-digit',month:'short',year:'numeric'}); }
+updateCurrentDate(); setInterval(updateCurrentDate,60000);
+
+document.addEventListener('keydown',function(e){
+  if(e.key==='Enter'){
+    if(document.getElementById('loginPage').style.display!=='none') doLogin();
+    if(document.getElementById('pinOverlay').style.display==='flex') verifyOwnerPin();
+  }
+});
+</script>
+</body>
+</html>
