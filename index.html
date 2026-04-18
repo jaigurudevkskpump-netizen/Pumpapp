@@ -7,7 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;700;800&family=Noto+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 <style>
 :root{--primary:#e65c00;--primary-dark:#c94e00;--primary-light:#ff7a1a;--accent:#f9c74f;--success:#2ec27e;--danger:#e74c3c;--info:#3498db;--warning:#f39c12;--bg:#f0f2f5;--card:#fff;--sidebar:#1a1a2e;--text:#1a1a2e;--text-muted:#6b7280;--border:#e5e7eb;--shadow:0 2px 12px rgba(0,0,0,0.08);}
 *{margin:0;padding:0;box-sizing:border-box;}
@@ -492,16 +492,17 @@ tr:hover td{background:#fafafa;}
 firebase.initializeApp({
   apiKey:"AIzaSyBVwmzWU41LDzqYzg-MLacYy0dcpKKzN3c",
   authDomain:"mypumpappp.firebaseapp.com",
+  databaseURL:"https://mypumpappp-default-rtdb.firebaseio.com",
   projectId:"mypumpappp",
   storageBucket:"mypumpappp.firebasestorage.app",
   messagingSenderId:"745135074294",
   appId:"1:745135074294:web:aa6d5208d1a1ad5547b5d7"
 });
-var db=firebase.firestore();
-function fbSet(col,id,data){return db.collection(col).doc(String(id)).set(Object.assign({},data,{_ts:Date.now()})).catch(function(e){console.error('fbSet',e);});}
-function fbDel(col,id){return db.collection(col).doc(String(id)).delete().catch(function(e){console.error('fbDel',e);});}
-function fbGetAll(col){return db.collection(col).get().then(function(s){return s.docs.map(function(d){return d.data();});}).catch(function(){return [];});}
-function fbListen(col,cb){return db.collection(col).onSnapshot(function(s){cb(s.docs.map(function(d){return d.data();}));},function(e){console.error('fbListen',e);});}
+var db=firebase.database();
+function fbSet(col,id,data){return db.ref(col+'/'+String(id)).set(Object.assign({},data,{_ts:Date.now()})).catch(function(e){console.error('fbSet',e);});}
+function fbDel(col,id){return db.ref(col+'/'+String(id)).remove().catch(function(e){console.error('fbDel',e);});}
+function fbGetAll(col){return db.ref(col).get().then(function(s){if(!s.exists())return[];var arr=[];s.forEach(function(c){arr.push(c.val());});return arr;}).catch(function(){return[];});}
+function fbListen(col,cb){return db.ref(col).on('value',function(s){var arr=[];if(s.exists())s.forEach(function(c){arr.push(c.val());});cb(arr);},function(e){console.error('fbListen',e);});}
 function setFbStatus(on){var el=document.getElementById('fbBadge');el.textContent=on?'🟢 Firebase Online':'🔴 Offline';el.className='fb-badge '+(on?'fb-on':'fb-off');}
 
 // =========================================================
@@ -601,10 +602,7 @@ function showNotif(){showToast(S.customers.filter(function(c){return c.outstandi
 function closeModal(){document.getElementById('modalOverlay').style.display='none';}
 
 function editBtn(editFn,delFn){
-  if(S.isOwner){
-    return '<div style="display:flex;gap:4px;"><button class="btn btn-sm btn-outline" onclick="'+editFn+'" title="Edit">✏</button><button class="btn btn-sm btn-danger" onclick="'+delFn+'" title="Delete">🗑</button></div>';
-  }
-  return '<span class="lock-badge"><i class="fas fa-lock"></i> Locked</span>';
+  return '<div style="display:flex;gap:4px;"><button class="btn btn-sm btn-outline" onclick="'+editFn+'" title="Edit">✏</button><button class="btn btn-sm btn-danger" onclick="'+delFn+'" title="Delete">🗑</button></div>';
 }
 
 function showPage(p){
@@ -690,7 +688,16 @@ function loadAllFromFirebase(){
     if(r[6].length)S.seEntries=r[6];
     if(r[7].length)S.dipHistory=r[7].sort(function(a,b){return (b._ts||0)-(a._ts||0);});
     if(r[8].length)S.jvEntries=r[8];
-    if(r[9].length)S.tanks=r[9];
+    if(r[9].length){
+      S.tanks=r[9];
+      // Check karo ki dono tanks hain - Petrol aur Diesel
+      var hasPetrol=S.tanks.find(function(t){return t.fuel==='Petrol';});
+      var hasDiesel=S.tanks.find(function(t){return t.fuel==='Diesel';});
+      if(!hasPetrol){var pt={name:'Tank 1',fuel:'Petrol',cap:20000,stock:14400};S.tanks.push(pt);fbSet('tanks',pt.name,pt);}
+      if(!hasDiesel){var dt={name:'Tank 2',fuel:'Diesel',cap:20000,stock:11000};S.tanks.push(dt);fbSet('tanks',dt.name,dt);}
+    }else{
+      S.tanks.forEach(function(t){fbSet('tanks',t.name,t);});
+    }
     if(r[10].length)r[10].forEach(function(x){if(x.fuel&&x.rate)S.fuelRates[x.fuel]=x.rate;});
     if(r[11].length)S.rateHistory=r[11].sort(function(a,b){return (b._ts||0)-(a._ts||0);});
     if(r[12].length)S.suppliers=r[12];
@@ -711,17 +718,28 @@ function loadAllFromFirebase(){
 }
 
 function startListeners(){
-  fbListen('sales',function(d){if(d.length){S.sales=d.sort(function(a,b){return (b._ts||0)-(a._ts||0);});renderSalesTable();renderDashboard();}});
-  fbListen('expenses',function(d){if(d.length){S.expenses=d.sort(function(a,b){return (b._ts||0)-(a._ts||0);});renderExpenseTable();}});
-  fbListen('collections',function(d){if(d.length){S.collections=d.sort(function(a,b){return (b._ts||0)-(a._ts||0);});renderCollectionTable();}});
-  // FIX 4: customers listener update karta hai dashboard bhi
-  fbListen('customers',function(d){if(d.length){S.customers=d;renderCustomerTable();renderPendingReport();renderDashboard();updateCustDatalist();}});
-  fbListen('invoices',function(d){if(d.length){S.invoices=d.sort(function(a,b){return (b._ts||0)-(a._ts||0);});renderInvoiceHistory();}});
-  fbListen('salaries',function(d){if(d.length){S.salaries=d;renderSalaryTable();}});
-  fbListen('suppliers',function(d){if(d.length){S.suppliers=d;renderSuppTable();}});
-  fbListen('staffList',function(d){if(d.length){S.staffList=d;renderStaffTable();updateStaffDropdowns();}});
-  fbListen('tanks',function(d){if(d.length){S.tanks=d;renderDashboard();renderDipStock();renderStockReports();}});
-  fbListen('tankerReceipts',function(d){if(d.length){S.tankerReceipts=d.sort(function(a,b){return (b._ts||0)-(a._ts||0);});renderTankerHistory();}});
+  fbListen('sales',function(d){S.sales=d.sort(function(a,b){return (b._ts||0)-(a._ts||0);});renderSalesTable();renderDashboard();});
+  fbListen('expenses',function(d){S.expenses=d.sort(function(a,b){return (b._ts||0)-(a._ts||0);});renderExpenseTable();});
+  fbListen('collections',function(d){S.collections=d.sort(function(a,b){return (b._ts||0)-(a._ts||0);});renderCollectionTable();});
+  fbListen('customers',function(d){S.customers=d;renderCustomerTable();renderPendingReport();renderDashboard();updateCustDatalist();});
+  fbListen('invoices',function(d){S.invoices=d.sort(function(a,b){return (b._ts||0)-(a._ts||0);});renderInvoiceHistory();});
+  fbListen('salaries',function(d){S.salaries=d;renderSalaryTable();});
+  fbListen('suppliers',function(d){S.suppliers=d;renderSuppTable();});
+  fbListen('staffList',function(d){S.staffList=d;renderStaffTable();updateStaffDropdowns();});
+  fbListen('tanks',function(d){
+    if(d.length){
+      S.tanks=d;
+      // Dono tanks ensure karo
+      var hasPetrol=S.tanks.find(function(t){return t.fuel==='Petrol';});
+      var hasDiesel=S.tanks.find(function(t){return t.fuel==='Diesel';});
+      if(!hasPetrol){var pt={name:'Tank 1',fuel:'Petrol',cap:20000,stock:14400};S.tanks.push(pt);fbSet('tanks',pt.name,pt);}
+      if(!hasDiesel){var dt={name:'Tank 2',fuel:'Diesel',cap:20000,stock:11000};S.tanks.push(dt);fbSet('tanks',dt.name,dt);}
+    }else{
+      S.tanks.forEach(function(t){fbSet('tanks',t.name,t);});
+    }
+    renderDashboard();renderDipStock();renderStockReports();updateStockPreview();
+  });
+  fbListen('tankerReceipts',function(d){S.tankerReceipts=d.sort(function(a,b){return (b._ts||0)-(a._ts||0);});renderTankerHistory();});
 }
 
 function initAllPages(){
