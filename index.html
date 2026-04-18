@@ -602,7 +602,10 @@ function showNotif(){showToast(S.customers.filter(function(c){return c.outstandi
 function closeModal(){document.getElementById('modalOverlay').style.display='none';}
 
 function editBtn(editFn,delFn){
-  return '<div style="display:flex;gap:4px;"><button class="btn btn-sm btn-outline" onclick="'+editFn+'" title="Edit">✏</button><button class="btn btn-sm btn-danger" onclick="'+delFn+'" title="Delete">🗑</button></div>';
+  if(S.isOwner){
+    return '<div style="display:flex;gap:4px;"><button class="btn btn-sm btn-outline" onclick="'+editFn+'" title="Edit">✏</button><button class="btn btn-sm btn-danger" onclick="'+delFn+'" title="Delete">🗑</button></div>';
+  }
+  return '<span class="lock-badge"><i class="fas fa-lock"></i> Locked</span>';
 }
 
 function showPage(p){
@@ -635,7 +638,8 @@ function requireOwnerAuth(cb,reason){
 function verifyOwnerPin(){
   if(document.getElementById('pinInput').value===OWNER_PIN){
     document.getElementById('pinOverlay').style.display='none';
-    if(S.pinCallback)S.pinCallback();
+    var cb=S.pinCallback;S.pinCallback=null;
+    if(cb)cb();
   }else{document.getElementById('pinError').style.display='block';document.getElementById('pinInput').value='';}
 }
 function closePinOverlay(){document.getElementById('pinOverlay').style.display='none';S.pinCallback=null;}
@@ -1014,31 +1018,35 @@ function saveTankerReceipt(){
   var fbId=uid();
   var receipt={fbId:fbId,date:date,tankerNo:tankerNo,invoice:invoice,driver:driver,driverPhone:driverPhone,supplier:supplier,petrolTotal:pTotal,dieselTotal:dTotal,chamberData:chamberData,lockedBy:S.currentUser};
 
-  // FIX 3: Add to tank stocks — dashboard auto updates via listener
+  // Stock update karo aur Firebase mein save karo
   var updatedTanks=[];
   if(pTotal>0){
-    var pt=S.tanks.findIndex(function(t){return t.fuel==='Petrol';});
-    if(pt>=0){
-      S.tanks[pt].stock=parseFloat((S.tanks[pt].stock+pTotal).toFixed(2));
-      if(S.tanks[pt].stock>S.tanks[pt].cap){showToast('Petrol tank overflow! Capacity: '+fmt(S.tanks[pt].cap)+'L','error');S.tanks[pt].stock=S.tanks[pt].cap;}
-      fbSet('tanks',S.tanks[pt].name,S.tanks[pt]);
-      updatedTanks.push('Petrol +'+fmt(pTotal)+'L');
+    var ptIdx=S.tanks.findIndex(function(t){return t.fuel==='Petrol';});
+    if(ptIdx>=0){
+      S.tanks[ptIdx].stock=parseFloat((S.tanks[ptIdx].stock+pTotal).toFixed(2));
+      if(S.tanks[ptIdx].stock>S.tanks[ptIdx].cap){S.tanks[ptIdx].stock=S.tanks[ptIdx].cap;showToast('Petrol tank full!','warning');}
+      fbSet('tanks',S.tanks[ptIdx].name,S.tanks[ptIdx]);
+      updatedTanks.push('🔵 Petrol +'+fmt(pTotal)+'L');
+    }else{
+      showToast('Petrol tank nahi mila!','error');
     }
   }
   if(dTotal>0){
-    var dt=S.tanks.findIndex(function(t){return t.fuel==='Diesel';});
-    if(dt>=0){
-      S.tanks[dt].stock=parseFloat((S.tanks[dt].stock+dTotal).toFixed(2));
-      if(S.tanks[dt].stock>S.tanks[dt].cap){showToast('Diesel tank overflow! Capacity: '+fmt(S.tanks[dt].cap)+'L','error');S.tanks[dt].stock=S.tanks[dt].cap;}
-      fbSet('tanks',S.tanks[dt].name,S.tanks[dt]);
-      updatedTanks.push('Diesel +'+fmt(dTotal)+'L');
+    var dtIdx=S.tanks.findIndex(function(t){return t.fuel==='Diesel';});
+    if(dtIdx>=0){
+      S.tanks[dtIdx].stock=parseFloat((S.tanks[dtIdx].stock+dTotal).toFixed(2));
+      if(S.tanks[dtIdx].stock>S.tanks[dtIdx].cap){S.tanks[dtIdx].stock=S.tanks[dtIdx].cap;showToast('Diesel tank full!','warning');}
+      fbSet('tanks',S.tanks[dtIdx].name,S.tanks[dtIdx]);
+      updatedTanks.push('🟢 Diesel +'+fmt(dTotal)+'L');
+    }else{
+      showToast('Diesel tank nahi mila!','error');
     }
   }
 
   S.tankerReceipts.unshift(receipt);
   fbSet('tankerReceipts',fbId,receipt);
-  renderTankerHistory();renderDashboard();renderStockReports();
-  showToast('Tanker receipt saved! '+updatedTanks.join(' | ')+' — Tank updated!');
+  renderTankerHistory();renderDashboard();renderStockReports();renderDipStock();
+  showToast('✅ Tanker saved! '+updatedTanks.join(' | '));
   resetTankerForm();
 }
 
