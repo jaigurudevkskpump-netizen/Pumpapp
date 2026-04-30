@@ -539,7 +539,7 @@ tr:hover td{background:#fafafa;}
           <div style="background:rgba(231,76,60,0.07);border:1px solid rgba(231,76,60,0.25);border-radius:8px;padding:12px 16px;margin-bottom:18px;font-size:12.5px;color:#c0392b;line-height:1.7;">
             <b><i class="fas fa-warning"></i> Yeh action PERMANENT hai!</b><br>
             Is button se <b>Firebase ka saara data bhi delete</b> ho jayega — Sales, Expenses, Customers, Invoices, Collections, Salaries, Tanker Receipts, DIP Stock, Journals — <b>sab kuch.</b><br>
-            Aage badhne ke liye Reset Password <b>OWNER KO PATA HAI</b>.
+            Aage badhne ke liye <b>Owner ka login password</b> daalen.
           </div>
           <div class="form-row">
             <div class="form-field" style="max-width:280px;">
@@ -693,9 +693,8 @@ var S = {
   fuelRates:{ Petrol:104.52, Diesel:91.76, HSD:89.80 },
   rateHistory:[],
   tanks:[
-    {name:'Tank 1',fuel:'Petrol',cap:10000,stock:7200,dip:142},
-    {name:'Tank 2',fuel:'Diesel',cap:10000,stock:5500,dip:108},
-    {name:'Tank 3',fuel:'Diesel',cap:10000,stock:3000,dip:62}
+    {name:'Tank 1',fuel:'Petrol',cap:20000,stock:0,dip:0},
+    {name:'Tank 2',fuel:'Diesel',cap:20000,stock:0,dip:0}
   ],
   cashBook:[
     {date:'15/01',part:'Opening Balance',voucher:'-',dr:45000,cr:0,bal:45000},
@@ -788,7 +787,7 @@ function doFullDataReset(){
   var errEl = document.getElementById('resetPassError');
 
   // Password check
-  if(pass !== '331047'){
+  if(pass !== USERS['owner'].pass){
     errEl.style.display = 'block';
     document.getElementById('resetAuthPass').value = '';
     return;
@@ -814,9 +813,8 @@ function doFullDataReset(){
     S.nextInvNo = 1; S.nextRecNo = 1; S.nextJvNo = 1; S.nextSaleId = 1;
     S.fuelRates = { Petrol: 0, Diesel: 0, HSD: 0 };
     S.tanks = [
-      {name:'Tank 1', fuel:'Petrol', cap:10000, stock:0, dip:0},
-      {name:'Tank 2', fuel:'Diesel', cap:10000, stock:0, dip:0},
-      {name:'Tank 3', fuel:'Diesel', cap:10000, stock:0, dip:0}
+      {name:'Tank 1', fuel:'Petrol', cap:20000, stock:0, dip:0},
+      {name:'Tank 2', fuel:'Diesel', cap:20000, stock:0, dip:0}
     ];
     S.staff = [];
 
@@ -894,7 +892,27 @@ function loadAllFromFirebase(){
     if(seEntries.length) S.seEntries=seEntries;
     if(dipHistory.length) S.dipHistory=dipHistory.sort(function(a,b){return (b._ts||0)-(a._ts||0);});
     if(jvEntries.length) S.jvEntries=jvEntries;
-    if(tanks.length) S.tanks=tanks;
+    // Tanks: sirf 2 tanks allowed (Tank1=Petrol, Tank2=Diesel, cap=20000)
+    var defaultTanks = [
+      {name:'Tank 1',fuel:'Petrol',cap:20000,stock:0,dip:0},
+      {name:'Tank 2',fuel:'Diesel',cap:20000,stock:0,dip:0}
+    ];
+    if(tanks.length){
+      // Sirf Tank 1 aur Tank 2 lo, cap 20000 force karo
+      var t1 = tanks.find(function(t){return t.name==='Tank 1';});
+      var t2 = tanks.find(function(t){return t.name==='Tank 2';});
+      S.tanks = [
+        {name:'Tank 1', fuel:'Petrol', cap:20000, stock:t1?Number(t1.stock||0):0, dip:t1?Number(t1.dip||0):0},
+        {name:'Tank 2', fuel:'Diesel', cap:20000, stock:t2?Number(t2.stock||0):0, dip:t2?Number(t2.dip||0):0}
+      ];
+      // Firebase mein purane galat tanks hain to unhe overwrite karo
+      fbSet('tanks','Tank 1', S.tanks[0]);
+      fbSet('tanks','Tank 2', S.tanks[1]);
+      // Agar Tank 3 Firebase mein hai to delete karo
+      rtdb.ref('tanks/Tank 3').remove().catch(function(){});
+    } else {
+      S.tanks = defaultTanks;
+    }
     if(rates.length) rates.forEach(function(r){if(r.fuel&&r.rate)S.fuelRates[r.fuel]=r.rate;});
     if(rateHist.length) S.rateHistory=rateHist.sort(function(a,b){return (b._ts||0)-(a._ts||0);});
     if(fuelPurchases&&fuelPurchases.length) S.fuelPurchases=fuelPurchases.sort(function(a,b){return (b._ts||0)-(a._ts||0);});
