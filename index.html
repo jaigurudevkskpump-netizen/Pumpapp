@@ -508,17 +508,92 @@ tr:hover td{background:#fafafa;}
 
     <!-- MASTERS -->
     <div id="page-masters" class="section-page">
-      <div class="tabs"><div class="tab active" onclick="switchTab(this,'tabCust')">Customers</div><div class="tab" onclick="switchTab(this,'tabSupp')">Suppliers</div><div class="tab" onclick="switchTab(this,'tabStaff')">Staff</div></div>
+      <div class="tabs"><div class="tab active" onclick="switchTab(this,'tabCust')">Customers</div><div class="tab" onclick="switchTab(this,'tabSupp')">Suppliers</div><div class="tab" onclick="switchTab(this,'tabStaff')">Staff</div><div class="tab" onclick="switchTab(this,'tabReset')" style="color:var(--danger);font-weight:700;"><i class="fas fa-trash-alt"></i> Data Reset</div></div>
       <div id="tab-tabCust">
         <div class="card"><div class="card-header"><div class="card-title">Add Customer</div></div><div class="form-row"><div class="form-field"><label>Name</label><input type="text" id="custName" placeholder="Full name"></div><div class="form-field"><label>Phone</label><input type="tel" id="custPhone" placeholder="Mobile"></div><div class="form-field"><label>GSTIN</label><input type="text" id="custGST" placeholder="GST No."></div><div class="form-field"><label>Credit Limit (₹)</label><input type="number" id="custLimit" placeholder="50000"></div></div><div class="btn-group no-print"><button class="btn btn-primary" onclick="addCustomer()"><i class="fas fa-plus"></i> Add Customer</button></div></div>
         <div class="card"><div class="card-header"><div class="card-title">Customer List</div></div><div class="table-wrap"><table><thead><tr><th>#</th><th>Name</th><th>Phone</th><th>GSTIN</th><th>Limit</th><th>Outstanding</th><th class="no-print">Action</th></tr></thead><tbody id="custMasterTbl"></tbody></table></div></div>
       </div>
       <div id="tab-tabSupp" style="display:none;"><div class="card"><div class="card-header"><div class="card-title">Suppliers</div></div><div class="table-wrap"><table><thead><tr><th>Name</th><th>Phone</th><th>GSTIN</th><th>Payable</th></tr></thead><tbody><tr><td>HP Petroleum</td><td>011-26182820</td><td>07HPPCL1234A1Z5</td><td>₹15,000</td></tr><tr><td>IOC Supply</td><td>011-26177840</td><td>07IOCL5678B1Z2</td><td>₹10,000</td></tr></tbody></table></div></div></div>
-      <div id="tab-tabStaff" style="display:none;"><div class="card"><div class="card-header"><div class="card-title">Staff List</div></div><div class="table-wrap"><table><thead><tr><th>Name</th><th>Role</th><th>Phone</th><th>Salary</th></tr></thead><tbody><tr><td>Ramesh Kumar</td><td>Salesman</td><td>9988776655</td><td>₹13,500</td></tr><tr><td>Suresh Yadav</td><td>Salesman</td><td>9988776656</td><td>₹13,500</td></tr><tr><td>Mohan Singh</td><td>Manager</td><td>9988776657</td><td>₹24,000</td></tr></tbody></table></div></div></div>
+      <div id="tab-tabStaff" style="display:none;">
+        <div class="card">
+          <div class="card-header"><div class="card-title">Staff Jodein</div></div>
+          <div class="form-row">
+            <div class="form-field"><label>Naam</label><input type="text" id="staffName" placeholder="Pura naam"></div>
+            <div class="form-field"><label>Role</label><select id="staffRole"><option>Salesman</option><option>Manager</option><option>Cashier</option><option>Guard</option><option>Cleaner</option></select></div>
+            <div class="form-field"><label>Phone</label><input type="tel" id="staffPhone" placeholder="Mobile number"></div>
+            <div class="form-field"><label>Salary (₹)</label><input type="number" id="staffSalary" placeholder="13500"></div>
+          </div>
+          <div class="btn-group no-print"><button class="btn btn-primary" onclick="addStaff()"><i class="fas fa-plus"></i> Staff Jodein</button></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">Staff List</div></div>
+          <div class="table-wrap"><table><thead><tr><th>#</th><th>Naam</th><th>Role</th><th>Phone</th><th>Salary</th><th class="no-print">Action</th></tr></thead><tbody id="staffMasterTbl"></tbody></table></div>
+        </div>
+      </div>
+      <div id="tab-tabReset" style="display:none;">
+        <div class="card" style="border:2px solid rgba(231,76,60,0.3);">
+          <div class="card-header">
+            <div class="card-title" style="color:var(--danger);"><i class="fas fa-exclamation-triangle"></i> Full Data Reset — Saara Data Delete Karen</div>
+            <span class="lock-badge"><i class="fas fa-lock"></i> Sirf Owner</span>
+          </div>
+          <div style="background:rgba(231,76,60,0.07);border:1px solid rgba(231,76,60,0.25);border-radius:8px;padding:12px 16px;margin-bottom:18px;font-size:12.5px;color:#c0392b;line-height:1.7;">
+            <b><i class="fas fa-warning"></i> Yeh action PERMANENT hai!</b><br>
+            Is button se <b>Firebase ka saara data bhi delete</b> ho jayega — Sales, Expenses, Customers, Invoices, Collections, Salaries, Tanker Receipts, DIP Stock, Journals — <b>sab kuch.</b><br>
+            Aage badhne ke liye Reset Password <b>331047</b> daalen.
+          </div>
+          <div class="form-row">
+            <div class="form-field" style="max-width:280px;">
+              <label>Reset Password</label>
+              <input type="password" id="resetAuthPass" placeholder="Password daalen" style="letter-spacing:4px;">
+            </div>
+          </div>
+          <div id="resetPassError" style="color:var(--danger);font-size:12px;margin-bottom:10px;display:none;">❌ Galat password!</div>
+          <div class="btn-group no-print">
+            <button class="btn btn-danger" onclick="doFullDataReset()" style="padding:10px 22px;font-size:13px;">
+              <i class="fas fa-trash-alt"></i> Saara Data Reset Karo
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
+    <div id="page-settings" class="section-page">
+      <div class="card">
+        <div class="card-header"><div class="card-title"><i class="fas fa-cog"></i> System Settings</div><span class="lock-badge"><i class="fas fa-lock"></i> Owner Only</span></div>
+        <div class="form-row"><div class="form-field"><label>Company Name</label><input type="text" value="Jai Gurudev Kisan Seva Kendra"></div><div class="form-field"><label>License No.</label><input type="text" value="PP-UP-2022-0042"></div><div class="form-field"><label>GSTIN</label><input type="text" value="09ABCDE1234F1Z5"></div><div class="form-field"><label>Phone</label><input type="tel" value="+91 98765 43210"></div></div>
+        <div class="form-row"><div class="form-field"><label>Address</label><input type="text" value="NH-58, Mawana Road, Meerut, UP 250001"></div></div>
+        <div class="card-header" style="margin-top:14px;border-top:1px solid var(--border);padding-top:14px;"><div class="card-title">User Accounts</div></div>
+        <div class="table-wrap"><table><thead><tr><th>Username</th><th>Role</th><th>Status</th></tr></thead><tbody><tr><td>owner</td><td><span class="badge badge-orange">Owner</span></td><td><span class="badge badge-success">Active</span></td></tr><tr><td>manager</td><td><span class="badge badge-info">Manager</span></td><td><span class="badge badge-success">Active</span></td></tr><tr><td>cashier</td><td><span class="badge badge-warning">Cashier</span></td><td><span class="badge badge-success">Active</span></td></tr><tr><td>sales</td><td><span class="badge badge-success">Salesman</span></td><td><span class="badge badge-success">Active</span></td></tr></tbody></table></div>
+        <div class="btn-group no-print" style="margin-top:14px;"><button class="btn btn-primary" onclick="showToast('Settings saved!')"><i class="fas fa-save"></i> Save Settings</button></div>
+      </div>
 
-    <!-- SETTINGS -->
-    <div id="page-settings" class="section-page"><div class="card"><div class="card-header"><div class="card-title"><i class="fas fa-cog"></i> System Settings</div><span class="lock-badge"><i class="fas fa-lock"></i> Owner Only</span></div><div class="form-row"><div class="form-field"><label>Company Name</label><input type="text" value="Jai Gurudev Kisan Seva Kendra"></div><div class="form-field"><label>License No.</label><input type="text" value="PP-UP-2022-0042"></div><div class="form-field"><label>GSTIN</label><input type="text" value="09ABCDE1234F1Z5"></div><div class="form-field"><label>Phone</label><input type="tel" value="+91 98765 43210"></div></div><div class="form-row"><div class="form-field"><label>Address</label><input type="text" value="NH-58, Mawana Road, Meerut, UP 250001"></div></div><div class="card-header" style="margin-top:14px;border-top:1px solid var(--border);padding-top:14px;"><div class="card-title">User Accounts</div></div><div class="table-wrap"><table><thead><tr><th>Username</th><th>Role</th><th>Status</th></tr></thead><tbody><tr><td>owner</td><td><span class="badge badge-orange">Owner</span></td><td><span class="badge badge-success">Active</span></td></tr><tr><td>manager</td><td><span class="badge badge-info">Manager</span></td><td><span class="badge badge-success">Active</span></td></tr><tr><td>cashier</td><td><span class="badge badge-warning">Cashier</span></td><td><span class="badge badge-success">Active</span></td></tr><tr><td>sales</td><td><span class="badge badge-success">Salesman</span></td><td><span class="badge badge-success">Active</span></td></tr></tbody></table></div><div class="btn-group no-print" style="margin-top:14px;"><button class="btn btn-primary" onclick="showToast('Settings saved!')"><i class="fas fa-save"></i> Save Settings</button></div></div></div>
+      <!-- PASSWORD RESET CARD -->
+      <div class="card">
+        <div class="card-header"><div class="card-title"><i class="fas fa-key"></i> Password Reset</div><span class="lock-badge"><i class="fas fa-lock"></i> Owner Only</span></div>
+        <div class="form-row">
+          <div class="form-field">
+            <label>User Select karein</label>
+            <select id="resetUserSelect">
+              <option value="">-- Select User --</option>
+              <option value="owner">owner (Owner)</option>
+              <option value="manager">manager (Manager)</option>
+              <option value="cashier">cashier (Cashier)</option>
+              <option value="sales">sales (Salesman)</option>
+            </select>
+          </div>
+          <div class="form-field">
+            <label>Naya Password</label>
+            <input type="text" id="resetNewPass" placeholder="Naya password bharein">
+          </div>
+          <div class="form-field">
+            <label>Password Confirm karein</label>
+            <input type="text" id="resetConfirmPass" placeholder="Dobara bharein">
+          </div>
+        </div>
+        <div class="btn-group no-print">
+          <button class="btn btn-danger" onclick="doPasswordReset()"><i class="fas fa-redo"></i> Reset Password</button>
+        </div>
+      </div>
+    </div>
 
   </div>
 </div>
@@ -610,6 +685,11 @@ var S = {
   currentUser:null, currentRole:null, isOwner:false, pinCallback:null,
   sales:[], expenses:[], collections:[], customers:[], invoices:[],
   salaries:[], seEntries:[], dipHistory:[], jvEntries:[],
+  staff:[
+    {name:'Ramesh Kumar', role:'Salesman', phone:'9988776655', salary:13500},
+    {name:'Suresh Yadav', role:'Salesman', phone:'9988776656', salary:13500},
+    {name:'Mohan Singh',  role:'Manager',  phone:'9988776657', salary:24000}
+  ],
   fuelRates:{ Petrol:104.52, Diesel:91.76, HSD:89.80 },
   rateHistory:[],
   tanks:[
@@ -699,6 +779,67 @@ function verifyOwnerPin(){
   }
 }
 function closePinOverlay(){ document.getElementById('pinOverlay').style.display='none'; S.pinCallback=null; }
+
+// ============================================================
+// FULL DATA RESET
+// ============================================================
+function doFullDataReset(){
+  var pass = document.getElementById('resetAuthPass').value;
+  var errEl = document.getElementById('resetPassError');
+
+  // Password check
+  if(pass !== '331047'){
+    errEl.style.display = 'block';
+    document.getElementById('resetAuthPass').value = '';
+    return;
+  }
+  errEl.style.display = 'none';
+
+  if(!confirm('⚠️ LAST WARNING!\n\nFirebase se bhi saara data permanently delete ho jayega.\n\nKya aap 100% sure hain?')) return;
+
+  showToast('🔄 Data delete ho raha hai... wait karein', 'warning');
+
+  // Firebase ke saare collections delete karo
+  var cols = ['sales','expenses','collections','customers','invoices','salaries','shortExcess','dipHistory','journals','fuelPurchases','tankerReceipts','tanks','fuelRates','rateHistory'];
+  var promises = cols.map(function(col){
+    return rtdb.ref(col).remove().catch(function(e){ console.error('reset error',col,e); });
+  });
+
+  Promise.all(promises).then(function(){
+    // Local state bhi reset
+    S.sales = []; S.expenses = []; S.collections = []; S.customers = [];
+    S.invoices = []; S.salaries = []; S.seEntries = []; S.dipHistory = [];
+    S.jvEntries = []; S.rateHistory = []; S.fuelPurchases = [];
+    S.tankerReceipts = []; S.cashBook = []; S.bankBook = [];
+    S.nextInvNo = 1; S.nextRecNo = 1; S.nextJvNo = 1; S.nextSaleId = 1;
+    S.fuelRates = { Petrol: 0, Diesel: 0, HSD: 0 };
+    S.tanks = [
+      {name:'Tank 1', fuel:'Petrol', cap:10000, stock:0, dip:0},
+      {name:'Tank 2', fuel:'Diesel', cap:10000, stock:0, dip:0},
+      {name:'Tank 3', fuel:'Diesel', cap:10000, stock:0, dip:0}
+    ];
+    S.staff = [];
+
+    // Saare tables re-render
+    try{ renderDashboard(); }catch(e){}
+    try{ renderSalesTable(); }catch(e){}
+    try{ renderExpenseTable(); }catch(e){}
+    try{ renderCustomerTable(); }catch(e){}
+    try{ renderStaffTable(); }catch(e){}
+    try{ renderCollectionReg(); }catch(e){}
+    try{ renderInvoiceHistory(); }catch(e){}
+    try{ renderSalaryTable(); }catch(e){}
+    try{ renderTankerTable(); }catch(e){}
+    try{ renderJVTable(); }catch(e){}
+
+    // Password field clear
+    document.getElementById('resetAuthPass').value = '';
+
+    showToast('✅ Saara data successfully delete ho gaya!', 'success');
+  }).catch(function(err){
+    showToast('❌ Error: ' + err.message, 'error');
+  });
+}
 
 // ============================================================
 // LOGIN
@@ -1434,7 +1575,7 @@ function renderGST(){
 // ============================================================
 // MASTERS
 // ============================================================
-function renderMasters(){ renderCustomerTable(); }
+function renderMasters(){ renderCustomerTable(); renderStaffTable(); }
 function renderCustomerTable(){
   document.getElementById('custMasterTbl').innerHTML=S.customers.map(function(c,i){
     return '<tr><td>'+(i+1)+'</td><td><b>'+c.name+'</b></td><td>'+(c.phone||'-')+'</td><td>'+(c.gstin||'-')+'</td><td>₹'+fmt(c.limit||0)+'</td><td style="color:'+(c.outstanding>0?'var(--danger)':'var(--success)')+';">₹'+fmt(c.outstanding||0)+'</td><td class="no-print">'+editBtn('editCustomer('+i+')','deleteCustomer('+i+')')+'</td></tr>';
@@ -1469,6 +1610,93 @@ function deleteCustomer(idx){
     if(S.customers[idx].outstanding>0){showToast('Outstanding pending hai! Delete nahi hoga.','error');return;}
     if(confirm('Delete?')){var name=S.customers[idx].name;S.customers.splice(idx,1);renderCustomerTable();fbDel('customers',name);showToast('Customer deleted!');}
   },'Owner PIN required.');
+}
+
+// ============================================================
+// STAFF MASTER
+// ============================================================
+function renderStaffTable(){
+  var tbl = document.getElementById('staffMasterTbl');
+  if(!tbl) return;
+  tbl.innerHTML = S.staff.map(function(st, i){
+    return '<tr><td>'+(i+1)+'</td><td><b>'+st.name+'</b></td><td>'+st.role+'</td><td>'+(st.phone||'-')+'</td><td>₹'+fmt(st.salary||0)+'</td><td class="no-print"><div style="display:flex;gap:4px;"><button class="btn btn-sm btn-outline" onclick="editStaff('+i+')" title="Edit">✏</button><button class="btn btn-sm btn-danger" onclick="deleteStaff('+i+')" title="Delete">🗑</button></div></td></tr>';
+  }).join('');
+}
+function addStaff(){
+  var name = document.getElementById('staffName').value.trim();
+  if(!name){ showToast('Naam bharein','error'); return; }
+  if(S.staff.find(function(s){ return s.name===name; })){ showToast('Yeh staff already exist karta hai!','error'); return; }
+  var entry = {
+    name: name,
+    role: document.getElementById('staffRole').value,
+    phone: document.getElementById('staffPhone').value,
+    salary: parseFloat(document.getElementById('staffSalary').value)||0
+  };
+  S.staff.push(entry);
+  renderStaffTable();
+  ['staffName','staffPhone','staffSalary'].forEach(function(id){ document.getElementById(id).value=''; });
+  showToast(name+' staff mein add ho gaya!');
+}
+function editStaff(idx){
+  requireOwnerAuth(function(){
+    var st = S.staff[idx];
+    document.getElementById('modalTitle').textContent = 'Staff Edit karein';
+    document.getElementById('modalBody').innerHTML =
+      '<div class="form-row">'+
+        '<div class="form-field"><label>Naam</label><input type="text" id="es_name" value="'+st.name+'"></div>'+
+        '<div class="form-field"><label>Role</label><select id="es_role">'+
+          ['Salesman','Manager','Cashier','Guard','Cleaner'].map(function(r){ return '<option'+(st.role===r?' selected':'')+'>'+r+'</option>'; }).join('')+
+        '</select></div>'+
+      '</div>'+
+      '<div class="form-row">'+
+        '<div class="form-field"><label>Phone</label><input type="tel" id="es_phone" value="'+(st.phone||'')+'"></div>'+
+        '<div class="form-field"><label>Salary (₹)</label><input type="number" id="es_salary" value="'+(st.salary||0)+'"></div>'+
+      '</div>'+
+      '<div class="btn-group" style="margin-top:12px;">'+
+        '<button class="btn btn-primary" onclick="updateStaff('+idx+')"><i class="fas fa-save"></i> Update</button>'+
+        '<button class="btn btn-outline" onclick="closeModal()">Cancel</button>'+
+      '</div>';
+    document.getElementById('modalOverlay').style.display = 'flex';
+  }, 'Staff edit ke liye Owner PIN required.');
+}
+function updateStaff(idx){
+  var st = S.staff[idx];
+  st.name   = document.getElementById('es_name').value;
+  st.role   = document.getElementById('es_role').value;
+  st.phone  = document.getElementById('es_phone').value;
+  st.salary = parseFloat(document.getElementById('es_salary').value)||0;
+  closeModal();
+  renderStaffTable();
+  showToast('Staff updated!');
+}
+function deleteStaff(idx){
+  requireOwnerAuth(function(){
+    if(confirm('Yeh staff delete karna chahte hain?')){
+      S.staff.splice(idx, 1);
+      renderStaffTable();
+      showToast('Staff deleted!');
+    }
+  }, 'Owner PIN required.');
+}
+
+// ============================================================
+// PASSWORD RESET (Settings)
+// ============================================================
+function doPasswordReset(){
+  requireOwnerAuth(function(){
+    var user    = document.getElementById('resetUserSelect').value;
+    var newPass = document.getElementById('resetNewPass').value.trim();
+    var confPass= document.getElementById('resetConfirmPass').value.trim();
+    if(!user){ showToast('Pehle user select karein','error'); return; }
+    if(!newPass){ showToast('Naya password bharein','error'); return; }
+    if(newPass !== confPass){ showToast('Dono password match nahi karte!','error'); return; }
+    if(newPass.length < 4){ showToast('Password kam se kam 4 characters ka hona chahiye','error'); return; }
+    USERS[user].pass = newPass;
+    document.getElementById('resetNewPass').value = '';
+    document.getElementById('resetConfirmPass').value = '';
+    document.getElementById('resetUserSelect').value = '';
+    showToast(user+' ka password reset ho gaya! ✅');
+  }, 'Password reset ke liye Owner PIN required.');
 }
 
 // ============================================================
